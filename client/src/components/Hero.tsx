@@ -1,10 +1,23 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 
 export default function Hero() {
+  const targetRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Transform for the image to "drag" down to About section
+  // It will move from its initial position to a position further down
+  const y = useTransform(scrollYProgress, [0, 1], [0, 800]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -53,13 +66,11 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative hidden md:block"
-          >
-            <div className="relative w-80 h-80 mx-auto">
+          <div className="relative hidden md:block">
+            <motion.div
+              style={{ y, scale, opacity }}
+              className="relative w-80 h-80 mx-auto z-20"
+            >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
               <img 
                 src="/avatar.png" 
@@ -88,8 +99,8 @@ export default function Hero() {
                 <div className="text-xs text-muted-foreground">Current Role</div>
                 <div className="text-sm font-bold">Frontend Dev @ Aim Window</div>
               </motion.div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
 

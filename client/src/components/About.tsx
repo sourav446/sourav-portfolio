@@ -40,9 +40,10 @@ export default function About() {
           {/* Visual Side */}
           <motion.div 
             variants={itemVariants}
-            className="relative"
+            className="relative order-2 md:order-1"
           >
-            <div className="aspect-square rounded-3xl overflow-hidden border border-white/10 group">
+            {/* This is where the image from Hero will appear to "land" */}
+            <div className="aspect-square rounded-3xl overflow-hidden border border-white/10 group relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 group-hover:opacity-0 transition-opacity duration-500" />
               <img 
                 src="/avatar.png" 
@@ -56,7 +57,7 @@ export default function About() {
           </motion.div>
 
           {/* Content Side */}
-          <motion.div variants={itemVariants} className="space-y-8">
+          <motion.div variants={itemVariants} className="space-y-8 order-1 md:order-2">
             <div className="space-y-4">
               <h2 className="text-4xl font-bold font-display flex items-center gap-3">
                 <User className="text-primary" /> About Me
