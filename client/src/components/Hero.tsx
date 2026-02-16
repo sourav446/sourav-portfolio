@@ -10,11 +10,13 @@ export default function Hero() {
     offset: ["start start", "end start"],
   });
 
-  // Slide from right to left
-  const x = useTransform(scrollYProgress, [0, 1], [0, -600]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, 800]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  // Slide from right to left and land in the About section's image spot
+  // We increase the opacity threshold so it doesn't fade out completely
+  const x = useTransform(scrollYProgress, [0, 1], [0, -650]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 950]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [3, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.9, 1], [1, 1, 0.8]);
 
   return (
     <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -68,14 +70,14 @@ export default function Hero() {
 
           <div className="relative hidden md:block">
             <motion.div
-              style={{ x, y, scale, opacity }}
-              className="relative w-80 h-80 mx-auto z-20"
+              style={{ x, y, scale, opacity, rotate }}
+              className="relative w-80 h-80 mx-auto z-50"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
               <img 
                 src="/avatar.png" 
                 alt="Sourav Gokul"
-                className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500"
+                className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl transition-transform duration-500"
               />
               
               {/* Floating Badge 1 */}

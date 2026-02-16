@@ -37,19 +37,14 @@ export default function About() {
           variants={containerVariants}
           className="grid md:grid-cols-2 gap-16 items-center"
         >
-          {/* Visual Side */}
+          {/* Visual Side - Placeholder for the Hero image to land */}
           <motion.div 
             variants={itemVariants}
             className="relative order-2 md:order-1"
           >
-            {/* This is where the image from Hero will appear to "land" */}
-            <div className="aspect-square rounded-3xl overflow-hidden border border-white/10 group relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 group-hover:opacity-0 transition-opacity duration-500" />
-              <img 
-                src="/avatar.png" 
-                alt="About Sourav" 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100"
-              />
+            <div className="aspect-square rounded-3xl border border-white/5 bg-white/5 relative overflow-hidden">
+              {/* We leave this empty or with a very subtle ghost image so the Hero image lands here */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-accent/5" />
             </div>
             {/* Decorative Elements */}
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl animate-pulse" />
