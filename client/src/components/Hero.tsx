@@ -10,8 +10,8 @@ export default function Hero() {
     offset: ["start start", "end start"],
   });
 
-  // Transform for the image to "drag" down to About section
-  // It will move from its initial position to a position further down
+  // Slide from right to left
+  const x = useTransform(scrollYProgress, [0, 1], [0, -600]);
   const y = useTransform(scrollYProgress, [0, 1], [0, 800]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -68,7 +68,7 @@ export default function Hero() {
 
           <div className="relative hidden md:block">
             <motion.div
-              style={{ y, scale, opacity }}
+              style={{ x, y, scale, opacity }}
               className="relative w-80 h-80 mx-auto z-20"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
