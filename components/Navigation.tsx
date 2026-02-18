@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
-import { Menu, X, Github, Linkedin, Mail } from "lucide-react";
+import Link from "next/link";
+import { Menu, X, Linkedin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +21,7 @@ export default function Navigation() {
   const navLinks = [
     { name: "About", href: "#about" },
     { name: "Experience", href: "#experience" },
-    { name: "Work", href: "#projects" },
+    { name: "Highlights", href: "#projects" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -30,13 +32,10 @@ export default function Navigation() {
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <Link href="/">
-          <a className="text-2xl font-bold font-display tracking-tighter hover:text-primary transition-colors">
-            SG<span className="text-accent">.</span>
-          </a>
+        <Link href="/" className="text-2xl font-bold font-display tracking-tighter  transition-colors">
+          Sourav Velusamy
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <a
@@ -48,12 +47,17 @@ export default function Navigation() {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
-          <Button variant="outline" size="sm" className="border-primary/50 hover:bg-primary/20 hover:text-primary-foreground ml-4">
-            Resume
-          </Button>
+          <a
+            href="https://www.linkedin.com/in/souravgokul11"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Button variant="outline" size="sm" className="border-primary/50 hover:bg-primary/20 hover:text-primary-foreground ml-4">
+              LinkedIn
+            </Button>
+          </a>
         </div>
 
-        {/* Mobile Menu Toggle */}
         <button
           className="md:hidden text-foreground hover:text-accent transition-colors"
           onClick={() => setIsOpen(!isOpen)}
@@ -62,7 +66,6 @@ export default function Navigation() {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -83,9 +86,14 @@ export default function Navigation() {
                 </a>
               ))}
               <div className="flex gap-4 mt-4 pt-4 border-t border-border">
-                <a href="#" className="hover:text-accent transition-colors"><Github size={20} /></a>
-                <a href="#" className="hover:text-accent transition-colors"><Linkedin size={20} /></a>
-                <a href="#" className="hover:text-accent transition-colors"><Mail size={20} /></a>
+                <a
+                  href="https://www.linkedin.com/in/souravgokul11"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-accent transition-colors"
+                >
+                  <Linkedin size={20} />
+                </a>
               </div>
             </div>
           </motion.div>
