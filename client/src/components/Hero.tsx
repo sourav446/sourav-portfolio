@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
@@ -10,13 +10,19 @@ export default function Hero() {
     offset: ["start start", "end start"],
   });
 
-  // Slide from right to left and land in the About section's image spot
-  // We increase the opacity threshold so it doesn't fade out completely
-  const x = useTransform(scrollYProgress, [0, 1], [0, -650]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, 950]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [3, 0]);
-  const opacity = useTransform(scrollYProgress, [0, 0.9, 1], [1, 1, 0.8]);
+  // Smoothing the scroll progress
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  // Refined coordinates to land perfectly in the About section placeholder
+  const x = useTransform(smoothProgress, [0, 0.8], [0, -660]);
+  const y = useTransform(smoothProgress, [0, 0.8], [0, 940]);
+  const scale = useTransform(smoothProgress, [0, 0.8], [1, 1.15]);
+  const rotate = useTransform(smoothProgress, [0, 0.8], [3, 0]);
+  const opacity = useTransform(smoothProgress, [0, 0.1, 0.9, 1], [1, 1, 1, 0.9]);
 
   return (
     <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -69,15 +75,16 @@ export default function Hero() {
           </motion.div>
 
           <div className="relative hidden md:block">
+            {/* The primary moving image */}
             <motion.div
               style={{ x, y, scale, opacity, rotate }}
-              className="relative w-80 h-80 mx-auto z-50"
+              className="relative w-80 h-80 mx-auto z-50 will-change-transform"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
               <img 
                 src="/avatar.png" 
                 alt="Sourav Gokul"
-                className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl transition-transform duration-500"
+                className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl"
               />
               
               {/* Floating Badge 1 */}
@@ -88,7 +95,7 @@ export default function Hero() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-green-500 animate-ping" />
-                  <span className="text-sm font-medium">Available for hire</span>
+                  <span className="text-sm font-medium text-nowrap">Available for hire</span>
                 </div>
               </motion.div>
 
