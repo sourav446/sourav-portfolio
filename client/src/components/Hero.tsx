@@ -16,19 +16,19 @@ export default function Hero() {
     restDelta: 0.001
   });
 
-  // Calculate coordinates to land perfectly in the About section
-  // Increased Y to ensure it reaches the About section which is further down
-  // Adjusted X to align with the left-side placeholder in About
-  const x = useTransform(smoothProgress, [0, 1], [0, -660]);
-  const y = useTransform(smoothProgress, [0, 1], [0, 1100]); 
-  const scale = useTransform(smoothProgress, [0, 1], [1, 1.15]);
-  const rotate = useTransform(smoothProgress, [0, 1], [3, 0]);
+  // Calculate coordinates to land perfectly in the About section's left-side placeholder
+  // x: Moves from right (0) to left (-640px approx for standard container)
+  // y: Moves from hero center to about section center (approx 850px-950px depending on padding)
+  const x = useTransform(smoothProgress, [0, 0.8], [0, -680]);
+  const y = useTransform(smoothProgress, [0, 0.8], [0, 880]); 
+  const scale = useTransform(smoothProgress, [0, 0.8], [1, 1.1]);
+  const rotate = useTransform(smoothProgress, [0, 0.8], [3, 0]);
   
-  // Keep opacity high so it doesn't hide behind the About section
-  const opacity = useTransform(smoothProgress, [0, 0.9, 1], [1, 1, 1]);
+  // Keep opacity high so it doesn't hide
+  const opacity = useTransform(smoothProgress, [0, 0.1, 0.9, 1], [1, 1, 1, 1]);
 
   return (
-    <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-visible pt-16">
+    <section ref={targetRef} className="relative min-h-[120vh] flex items-center justify-center overflow-visible pt-16">
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
         <img 
