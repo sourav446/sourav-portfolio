@@ -28,7 +28,7 @@ export default function About() {
   ];
 
   return (
-    <section id="about" className="py-32 relative overflow-hidden bg-background">
+    <section id="about" className="py-32 relative z-0 overflow-visible bg-background">
       <div className="container mx-auto px-6">
         <motion.div
           initial="hidden"
@@ -37,24 +37,23 @@ export default function About() {
           variants={containerVariants}
           className="grid md:grid-cols-2 gap-20 items-center"
         >
-          {/* Visual Side - Landing zone for the Hero image */}
+          {/* Landing zone for the Hero image */}
           <motion.div 
             variants={itemVariants}
             className="relative order-2 md:order-1"
           >
-            <div className="aspect-square rounded-3xl border border-white/5 bg-white/[0.02] relative overflow-hidden flex items-center justify-center">
-              {/* This space is intentionally empty for the Hero image to "land" here during scroll */}
+            <div className="aspect-square rounded-3xl border border-white/5 bg-white/[0.02] relative flex items-center justify-center">
+              {/* This space is intentionally transparent to allow the floating hero image to be seen above it */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-accent/5 opacity-50" />
               <div className="text-white/5 font-display text-lg select-none">PORTFOLIO.IMG</div>
             </div>
             
-            {/* Decorative Elements */}
             <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary/5 rounded-full blur-3xl animate-pulse" />
             <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-accent/5 rounded-full blur-3xl animate-pulse" />
           </motion.div>
 
           {/* Content Side */}
-          <motion.div variants={itemVariants} className="space-y-8 order-1 md:order-2">
+          <motion.div variants={itemVariants} className="space-y-8 order-1 md:order-2 relative z-10">
             <div className="space-y-4">
               <h2 className="text-4xl md:text-5xl font-bold font-display flex items-center gap-3">
                 <User className="text-primary w-8 h-8" /> About Me

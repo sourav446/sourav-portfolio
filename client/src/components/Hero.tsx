@@ -10,22 +10,25 @@ export default function Hero() {
     offset: ["start start", "end start"],
   });
 
-  // Smoothing the scroll progress
   const smoothProgress = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001
   });
 
-  // Refined coordinates to land perfectly in the About section placeholder
-  const x = useTransform(smoothProgress, [0, 0.8], [0, -660]);
-  const y = useTransform(smoothProgress, [0, 0.8], [0, 940]);
-  const scale = useTransform(smoothProgress, [0, 0.8], [1, 1.15]);
-  const rotate = useTransform(smoothProgress, [0, 0.8], [3, 0]);
-  const opacity = useTransform(smoothProgress, [0, 0.1, 0.9, 1], [1, 1, 1, 0.9]);
+  // Calculate coordinates to land perfectly in the About section
+  // Increased Y to ensure it reaches the About section which is further down
+  // Adjusted X to align with the left-side placeholder in About
+  const x = useTransform(smoothProgress, [0, 1], [0, -660]);
+  const y = useTransform(smoothProgress, [0, 1], [0, 1100]); 
+  const scale = useTransform(smoothProgress, [0, 1], [1, 1.15]);
+  const rotate = useTransform(smoothProgress, [0, 1], [3, 0]);
+  
+  // Keep opacity high so it doesn't hide behind the About section
+  const opacity = useTransform(smoothProgress, [0, 0.9, 1], [1, 1, 1]);
 
   return (
-    <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section ref={targetRef} className="relative min-h-screen flex items-center justify-center overflow-visible pt-16">
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -75,10 +78,10 @@ export default function Hero() {
           </motion.div>
 
           <div className="relative hidden md:block">
-            {/* The primary moving image */}
+            {/* The primary moving image - ensured z-index is high to stay on top */}
             <motion.div
               style={{ x, y, scale, opacity, rotate }}
-              className="relative w-80 h-80 mx-auto z-50 will-change-transform"
+              className="relative w-80 h-80 mx-auto z-[100] will-change-transform"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
               <img 
