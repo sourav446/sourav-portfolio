@@ -62,14 +62,14 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-24 px-26 container mx-auto ">
+    <section id="contact" className="container mx-auto px-6 py-24 md:px-10 lg:px-16">
       <div className="grid md:grid-cols-2 gap-16">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl font-bold mb-6">
+          <h2 className="mb-6 text-4xl font-bold sm:text-5xl">
             Let&apos;s connect <br />
             <span className="text-primary">and build.</span>
           </h2>
@@ -98,12 +98,16 @@ export default function Contact() {
                 <div className="font-medium text-lg">souravgokul4@gmail.com</div>
               </div>
             </div>
-            <div className="flex gap-4 mt-8">
-              <div
-                className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all duration-300"
+            <div className="mt-8 flex gap-4">
+              <a
+                href="https://www.linkedin.com/in/souravgokul11"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Visit LinkedIn profile"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 transition-all duration-300 hover:border-primary hover:bg-primary hover:text-white"
               >
                 <Linkedin size={20} />
-              </div>
+              </a>
               <div>
                 <div className="text-sm text-muted-foreground">LinkedIn</div>
                 <a
@@ -127,7 +131,7 @@ export default function Contact() {
           className="bg-card/30 backdrop-blur-sm border border-white/10 p-8 rounded-2xl"
         >
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium ml-1">Name</label>
                 <Input
@@ -189,7 +193,7 @@ export default function Contact() {
                   }))
                 }
                 placeholder="Share your requirement..."
-                className="min-h-37.5 bg-background/50 border-white/10 focus:border-primary resize-none"
+                className="min-h-40 resize-none border-white/10 bg-background/50 focus:border-primary"
               />
             </div>
 

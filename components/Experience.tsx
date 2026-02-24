@@ -3,25 +3,25 @@ import { Briefcase, Calendar } from "lucide-react";
 
 export default function Experience() {
   return (
-    <section id="experience" className="py-24 container mx-auto px-22">
+    <section id="experience" className="container mx-auto px-6 py-18 md:px-10 lg:px-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="mb-16"
+        className="mb-10"
       >
-        <h2 className="text-4xl font-bold mb-6">Work Experience</h2>
+        <h2 className="text-4xl font-bold ">Work Experience</h2>
         <div className="h-1 w-20 bg-primary rounded-full" />
       </motion.div>
 
-      <div className="relative border-l border-white/10 ml-3 md:ml-6 space-y-12">
+      <div className="relative border-l border-white/10 ml-3 md:ml-6 space-y-6">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           className="relative pl-8 md:pl-12"
         >
-          <div className="absolute -left-1.25 top-2 w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]" />
+          <div className="absolute -left-1.5 top-2 h-3 w-3 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]" />
 
           <div className="bg-card/50 backdrop-blur-sm border border-white/10 p-6 md:p-8 rounded-2xl hover:bg-card/80 transition-colors">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">

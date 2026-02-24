@@ -45,7 +45,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="py-24 px-22 relative z-0 overflow-visible bg-background"
+      className="relative z-0 overflow-visible bg-background px-6 py-24 md:px-10 lg:px-16"
     >
       <div className="container mx-auto px-6">
         <motion.div
@@ -61,7 +61,7 @@ export default function About() {
           >
             <div
               id="about-image-zone"
-              className="w-80 h-80 rounded-3xl border border-white/5 bg-white/2 relative flex items-center justify-center"
+              className="relative flex h-80 w-80 items-center justify-center rounded-3xl border border-white/5 bg-white/[0.02]"
             >
               <div className="absolute inset-0 bg-linear-to-tr from-primary/5 to-accent/5 opacity-50" />
               {/* <div className="text-white/5 font-display text-lg select-none">IMAGE.ZONE</div> */}
@@ -92,7 +92,7 @@ export default function About() {
               environments.
             </p>
 
-            <div className="grid grid-cols-3 gap-4 md:gap-6 pt-4">
+            <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3 md:gap-6">
               {stats.map((stat) => (
                 <motion.div
                   key={stat.label}

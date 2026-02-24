@@ -11,39 +11,39 @@ import {
   SiGit,
   SiGithub,
 } from "react-icons/si";
-import { Check } from "lucide-react";
+import { Check, CodeXml } from "lucide-react";
 
 type CoreTech = {
   name: string;
-  subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   iconColor: string;
 };
 
 const coreStack: CoreTech[] = [
   {
+    name: "HTML & CSS",
+    icon: CodeXml,
+    iconColor: "text-red-600",
+  },
+  {
+    name: "JavaScript (JS)",
+    icon: SiJavascript,
+    iconColor: "text-yellow-300",
+  },
+  {
+    name: "TypeScript",
+    icon: SiTypescript,
+    iconColor: "text-blue-300",
+  },
+  {
     name: "React",
-    subtitle: "React",
     icon: SiReact,
     iconColor: "text-sky-300",
   },
   {
     name: "Next.js",
-    subtitle: "Next.js",
     icon: SiNextdotjs,
     iconColor: "text-white",
-  },
-  {
-    name: "TypeScript",
-    subtitle: "TypeScript",
-    icon: SiTypescript,
-    iconColor: "text-blue-300",
-  },
-  {
-    name: "JavaScript (JS)",
-    subtitle: "JavaScript",
-    icon: SiJavascript,
-    iconColor: "text-yellow-300",
   },
 ];
 
@@ -79,7 +79,7 @@ function SectionLabel({ title }: { title: string }) {
 
 export default function TechStack() {
   return (
-    <section className="relative overflow-hidden border-y border-white/10 py-10 sm:py-14 px-22">
+    <section className="relative overflow-hidden border-y border-white/10 px-6 py-10 sm:py-14 md:px-10 lg:px-16">
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-accent/5 blur-[120px] rounded-full" />
       <div className="container relative mx-auto space-y-10 px-6">
@@ -98,7 +98,7 @@ export default function TechStack() {
           </p>
         </motion.div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 justify-center">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 justify-center">
           {coreStack.map((tech, index) => (
             <motion.div
               key={tech.name}

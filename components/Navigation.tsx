@@ -31,7 +31,7 @@ export default function Navigation() {
         scrolled ? "bg-background/80 backdrop-blur-md border-b border-white/10 py-4" : "bg-transparent py-6"
       }`}
     >
-      <div className="container mx-auto px-6 flex justify-between items-center">
+      <div className="container mx-auto px-16 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold font-display tracking-tighter  transition-colors">
           Sourav Velusamy
         </Link>
@@ -47,7 +47,7 @@ export default function Navigation() {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
-          <a
+          {/* <a
             href="https://www.linkedin.com/in/souravgokul11"
             target="_blank"
             rel="noreferrer"
@@ -55,7 +55,7 @@ export default function Navigation() {
             <Button variant="outline" size="sm" className="border-primary/50 hover:bg-primary/20 hover:text-primary-foreground ml-4">
               LinkedIn
             </Button>
-          </a>
+          </a> */}
         </div>
 
         <button

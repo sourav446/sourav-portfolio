@@ -60,7 +60,7 @@ export default function Hero() {
   return (
     <section
       ref={targetRef}
-      className="relative min-h-screen flex items-center justify-center overflow-visible pt-10 px-20"
+      className="relative flex min-h-screen items-center justify-center overflow-visible px-6 pt-24 md:px-10 md:pt-10 lg:px-16"
     >
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
@@ -72,7 +72,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/50 to-background" />
       </div>
 
-      <div className="container mx-auto px-6 py-2 z-10 relative">
+      <div className="container relative z-10 mx-auto px-2 py-8 md:px-6 md:py-2">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -83,58 +83,61 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-block px-3 py-1 mb-4 border border-accent/30 rounded-full bg-accent/10 text-accent text-sm font-mono"
+              className="mb-4 inline-block rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-mono text-accent"
             >
               Associate Software Developer | React & Next.js
             </motion.div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-6xl lg:text-7xl">
               Designing the <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-400 to-accent animate-pulse">
+              <span className="bg-linear-to-r from-primary via-indigo-400 to-accent bg-clip-text text-transparent">
                 Digital Future
               </span>
-            </h1> 
-            Hi, I&apos;m{" "}
-            <span className="text-foreground font-semibold">
-              Sourav Velusamy
-            </span>
-            Associate Software Developer specializing in React.js and Next.js. I
-            build scalable, performance-focused web applications across LMS,
-            E-commerce, and Project Management platforms, integrating backend
-            APIs and delivering production-ready features in Agile environments.
+            </h1>
+            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+              Hi, I&apos;m <span className="font-semibold text-foreground">Sourav Velusamy</span>, an Associate Software Developer focused on React.js and Next.js. I build scalable, performance-focused products across LMS, e-commerce, and project management platforms.
+            </p>
             <div className="flex flex-wrap gap-4 py-6">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/25"
-              >
-                {/* View My Work <ArrowRight className="ml-2 h-4 w-4" /> */}
-                Resume
-              </Button>
-              <a
-                href="https://www.linkedin.com/in/souravgokul11"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href="#projects">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="border-white/10 hover:bg-white/5 cursor-pointer"
+                  className="border-0 bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary/90"
                 >
-                  LinkedIn
+                  Resume <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </a>
-              <a
-                href="https://github.com/sourav446"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href="#contact">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white/10 hover:bg-white/5"
                 >
-                  GitHub
+                  Contact Me
                 </Button>
               </a>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/10 hover:bg-white/5"
+                asChild
+              >
+                <a
+                  href="https://www.linkedin.com/in/souravgokul11"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  LinkedIn
+                </a>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/10 hover:bg-white/5"
+                asChild
+              >
+                <a href="https://github.com/sourav446" target="_blank" rel="noreferrer">
+                  GitHub
+                </a>
+              </Button>
             </div>
           </motion.div>
 
@@ -143,11 +146,11 @@ export default function Hero() {
             <motion.div
               ref={movingImageRef}
               style={{ x, y, scale, opacity, rotate }}
-              className="relative w-80 h-80 mx-auto z-100 will-change-transform"
+              className="relative z-40 mx-auto h-80 w-80 will-change-transform"
             >
               <div className="absolute inset-0 bg-linear-to-tr from-primary to-accent rounded-full blur-3xl opacity-30 animate-pulse" />
               <img
-                src="/Images/Sourav.png"
+                src="/Images/sourav.png"
                 alt="Sourav Gokul"
                 className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl"
               />
@@ -168,7 +171,7 @@ export default function Hero() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ repeat: Infinity, duration: 5, delay: 1 }}
-                className="absolute -bottom-6 -left-10 bg-card/80 backdrop-blur border border-white/10 px-4 py-4 rounded-xl shadow-xl max-w-39.5"
+                className="absolute -bottom-6 -left-10 max-w-40 rounded-xl border border-white/10 bg-card/80 px-4 py-4 shadow-xl backdrop-blur"
               >
                 <div className="text-xs text-muted-foreground">
                   Designation :{" "}

@@ -5,26 +5,26 @@ const highlights = [
   {
     title: "Reusable UI Component System",
     description:
-      "Built and maintained reusable React UI components to improve consistency and development speed across modules.",
+      "Designed and maintained a scalable React component system to improve development efficiency and ensure consistency across LMS and E-commerce platforms.",
     tags: ["React.js", "Component Architecture", "Frontend"],
   },
   {
     title: "API Integration with React Query",
     description:
-      "Integrated REST APIs using React Query for cleaner data flows, caching, and better client-side performance.",
+      "Implemented optimized API integration using React Query with intelligent caching, background refetching, mutation handling, and structured error management to enhance data consistency, reliability, and overall frontend performance.",
     tags: ["React Query", "REST APIs", "State Management"],
   },
   {
     title: "Workflow and Real-Time Features",
     description:
-      "Delivered approval workflows, modals, sprint planning views, drag-and-drop interactions, and Socket.IO chat issue fixes.",
-    tags: ["@dnd-kit", "Socket.IO", "Product Features"],
+      "Built approval workflows, sprint planning views, drag-and-drop interactions, real-time chat, and integrated HLS-based video upload and streaming for LMS e-learning modules.",
+    tags: ["@dnd-kit", "Socket.IO", "HLS"],
   },
 ];
 
 export default function Projects() {
   return (
-    <section id="projects" className="py-24 px-22 bg-background relative overflow-hidden">
+    <section id="projects" className="relative overflow-hidden bg-background px-6 py-16 md:px-10 lg:px-16">
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-accent/5 blur-[120px] rounded-full" />
 
@@ -47,7 +47,7 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="rounded-2xl bg-card border border-white/5 p-6"
+              className="rounded-2xl border border-white/5 bg-card p-6 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/20"
             >
               <div className="flex flex-wrap gap-2 mb-4">
                 {item.tags.map((tag) => (
