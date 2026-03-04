@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sourav Velusamy | Portfolio",
+  title: "Sourav Gokul | Portfolio",
   description: "Associate Software Developer (Frontend) portfolio of Sourav Velusamy.",
 };
 
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

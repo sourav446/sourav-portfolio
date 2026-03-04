@@ -1,12 +1,21 @@
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Github,
+  Linkedin,
+  Mail,
+  Phone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import ResumeViewer from "@/components/ui/ResumeViewer";
 
 export default function Hero() {
   const targetRef = useRef<HTMLDivElement>(null);
   const movingImageRef = useRef<HTMLDivElement>(null);
   const [landingOffset, setLandingOffset] = useState({ x: -680, y: 880 });
+  const [openResume, setOpenResume] = useState(false);
   const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ["start start", "end start"],
@@ -60,7 +69,7 @@ export default function Hero() {
   return (
     <section
       ref={targetRef}
-      className="relative flex min-h-screen items-center justify-center overflow-visible px-6 pt-24 md:px-10 md:pt-10 lg:px-16"
+      className="relative flex min-h-screen items-center justify-center overflow-visible px-6  md:px-10 md:pt-10 lg:px-16"
     >
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
@@ -72,7 +81,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/50 to-background" />
       </div>
 
-      <div className="container relative z-10 mx-auto px-2 py-8 md:px-6 md:py-2">
+      <div className="container relative z-10 mx-auto px-2 mt-19 md:px-6 md:py-2">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -83,7 +92,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mb-4 inline-block rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-mono text-accent"
+              className="mb-4 inline-block rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[13px] md:text-sm font-mono text-accent"
             >
               Associate Software Developer | React & Next.js
             </motion.div>
@@ -94,30 +103,49 @@ export default function Hero() {
               </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              Hi, I&apos;m <span className="font-semibold text-foreground">Sourav Velusamy</span>, an Associate Software Developer focused on React.js and Next.js. I build scalable, performance-focused products across LMS, e-commerce, and project management platforms.
+              Hi, I&apos;m{" "}
+              <span className="font-semibold text-foreground">
+                Sourav Gokul V
+              </span>
+              , a Frontend Developer with hands-on experience building
+              production-ready web applications using React.js and Next.js. I
+              specialize in creating responsive, scalable, and
+              performance-focused user interfaces while working closely with
+              backend APIs and real-world business workflows.
+              <br />
             </p>
-            <div className="flex flex-wrap gap-4 py-6">
-              <a href="#projects">
-                <Button
-                  size="lg"
-                  className="border-0 bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary/90"
-                >
-                  Resume <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
+            <div
+              className="
+    grid grid-cols-4 gap-3 py-8 md:py-6
+    md:flex md:flex-wrap md:gap-4
+  "
+            >
+              {/* Resume */}
+              <Button
+                size="lg"
+                className="col-span-4 border-0 bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary/90 md:col-auto"
+                onClick={() => setOpenResume(true)}
+              >
+                Resume <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+
+              {/* Contact */}
               <a href="#contact">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/10 hover:bg-white/5"
+                  className="w-full border-border/70 hover:bg-muted/60"
                 >
-                  Contact Me
+                  <span className="hidden md:block">Contact Me</span>
+                  <Mail className="block md:hidden h-4 w-4 mx-auto" />
                 </Button>
               </a>
+
+              {/* LinkedIn */}
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/10 hover:bg-white/5"
+                className="border-border/70 hover:bg-muted/60"
                 asChild
               >
                 <a
@@ -125,20 +153,36 @@ export default function Hero() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  LinkedIn
+                  <span className="hidden md:block">LinkedIn</span>
+                  <Linkedin className="block md:hidden h-4 w-4 mx-auto" />
+                </a>
+              </Button>
+
+              {/* GitHub */}
+              <Button
+                variant="outline"
+                className="border-border/70 hover:bg-muted/60"
+                asChild
+              >
+                <a
+                  href="https://github.com/sourav446"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="hidden md:block">GitHub</span>
+                  <Github className="block md:hidden h-4 w-4 mx-auto" />
                 </a>
               </Button>
               <Button
-                size="lg"
                 variant="outline"
-                className="border-white/10 hover:bg-white/5"
-                asChild
+                className="block border-border/70 hover:bg-muted/60 md:hidden"
               >
-                <a href="https://github.com/sourav446" target="_blank" rel="noreferrer">
-                  GitHub
+                <a href="+919566943359" target="_blank" rel="noreferrer">
+                  <Phone className="block md:hidden h-4 w-4 mx-auto" />
                 </a>
               </Button>
             </div>
+            <ResumeViewer open={openResume} onOpenChange={setOpenResume} />
           </motion.div>
 
           <div className="relative hidden md:block">
@@ -152,7 +196,7 @@ export default function Hero() {
               <img
                 src="/Images/sourav.png"
                 alt="Sourav Gokul"
-                className="relative w-full h-full object-cover rounded-2xl border-2 border-white/10 shadow-2xl"
+                className="relative h-full w-full rounded-2xl border-2 border-border/70 object-cover shadow-2xl"
               />
 
               {/* Floating Badge 1 */}
@@ -171,7 +215,7 @@ export default function Hero() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ repeat: Infinity, duration: 5, delay: 1 }}
-                className="absolute -bottom-6 -left-10 max-w-40 rounded-xl border border-white/10 bg-card/80 px-4 py-4 shadow-xl backdrop-blur"
+                className="absolute -bottom-6 -left-10 max-w-40 rounded-xl border border-border/70 bg-card/80 px-4 py-4 shadow-xl backdrop-blur"
               >
                 <div className="text-xs text-muted-foreground">
                   Designation :{" "}
@@ -189,7 +233,7 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 animate-bounce"
       >
         <ChevronDown className="text-muted-foreground" />
       </motion.div>

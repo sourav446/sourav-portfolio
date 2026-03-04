@@ -80,7 +80,7 @@ export default function Contact() {
 
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center border border-white/10 text-accent">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 bg-card text-accent">
                 <MapPin />
               </div>
               <div>
@@ -90,7 +90,7 @@ export default function Contact() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center border border-white/10 text-accent">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 bg-card text-accent">
                 <Mail />
               </div>
               <div>
@@ -104,7 +104,7 @@ export default function Contact() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Visit LinkedIn profile"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 transition-all duration-300 hover:border-primary hover:bg-primary hover:text-white"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground"
               >
                 <Linkedin size={20} />
               </a>
@@ -128,7 +128,7 @@ export default function Contact() {
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          className="bg-card/30 backdrop-blur-sm border border-white/10 p-8 rounded-2xl"
+          className="rounded-2xl border border-border/70 bg-card/30 p-8 backdrop-blur-sm"
         >
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -144,7 +144,7 @@ export default function Contact() {
                     }))
                   }
                   placeholder="Your name"
-                  className="bg-background/50 border-white/10 focus:border-primary"
+                  className="border-border/70 bg-background/50 focus:border-primary"
                 />
               </div>
               <div className="space-y-2">
@@ -160,7 +160,7 @@ export default function Contact() {
                     }))
                   }
                   placeholder="your@email.com"
-                  className="bg-background/50 border-white/10 focus:border-primary"
+                  className="border-border/70 bg-background/50 focus:border-primary"
                 />
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function Contact() {
                   }))
                 }
                 placeholder="Collaboration or role"
-                className="bg-background/50 border-white/10 focus:border-primary"
+                className="border-border/70 bg-background/50 focus:border-primary"
               />
             </div>
 
@@ -193,7 +193,7 @@ export default function Contact() {
                   }))
                 }
                 placeholder="Share your requirement..."
-                className="min-h-40 resize-none border-white/10 bg-background/50 focus:border-primary"
+                className="min-h-40 resize-none border-border/70 bg-background/50 focus:border-primary"
               />
             </div>
 

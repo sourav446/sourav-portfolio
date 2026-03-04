@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       </p>
 
       <p style="margin:4px 0 0 0; font-size:12px; color:#9ca3af;">
-        © ${new Date().getFullYear()} Sourav Velusamy
+        © ${new Date().getFullYear()} Sourav Gokul V
       </p>
 
     </div>

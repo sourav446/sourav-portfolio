@@ -2,11 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Linkedin } from "lucide-react";
+import { Menu, X, Linkedin, Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
-export default function Navigation() {
+type NavigationProps = {
+  theme: "dark" | "light";
+  onToggleTheme: () => void;
+};
+
+export default function Navigation({ theme, onToggleTheme }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -28,15 +33,37 @@ export default function Navigation() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-md border-b border-white/10 py-4" : "bg-transparent py-6"
+        scrolled
+          ? "border-b border-border/60 bg-background/80 py-3 backdrop-blur-md"
+          : "bg-transparent py-6"
       }`}
     >
       <div className="container mx-auto px-16 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold font-display tracking-tighter  transition-colors">
-          Sourav Velusamy
+        <Link
+          href="/"
+          className="text-2xl font-bold font-display tracking-tighter  transition-colors"
+        >
+          Sourav Gokul V
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
+          <div className="flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 text-sm text-foreground">
+            {/* {theme === "dark" ? (
+              <Sun className="h-4 w-4 text-primary" />
+            ) : (
+              <Moon className="h-4 w-4 text-primary" />
+            )} */}
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={onToggleTheme}
+              aria-label="Toggle dark mode"
+            />
+            <span>{theme === "dark" ? (
+              <Sun className="h-4 w-4 text-primary" />
+            ) : (
+              <Moon className="h-4 w-4 text-primary" />
+            )}</span>
+          </div>
           {navLinks.map((link) => (
             <a
               key={link.name}
@@ -75,6 +102,23 @@ export default function Navigation() {
             className="absolute top-full left-0 right-0 bg-card border-b border-border md:hidden"
           >
             <div className="flex flex-col p-6 gap-4">
+              <div className="flex items-center justify-between rounded-md border border-border/70 bg-card/70 px-3 py-2 text-foreground">
+                <div className="flex items-center gap-2">
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-primary" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {theme === "dark" ? "Dark Mode" : "Light Mode"}
+                  </span>
+                </div>
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={onToggleTheme}
+                  aria-label="Toggle dark mode"
+                />
+              </div>
               {navLinks.map((link) => (
                 <a
                   key={link.name}
