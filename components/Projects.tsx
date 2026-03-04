@@ -791,6 +791,7 @@ const ContentPage = forwardRef<HTMLDivElement, CProps>(
 
           <div className="text-[9px] tracking-[0.22em] opacity-30 mt-2.5 uppercase font-medium">
             Page {pageNo}
+            
           </div>
         </div>
       </div>
