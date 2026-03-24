@@ -68,6 +68,7 @@ export default function Hero() {
 
   return (
     <section
+      id="home"
       ref={targetRef}
       className="relative flex min-h-screen items-center justify-center overflow-visible px-6  md:px-10 md:pt-10 lg:px-16"
     >
@@ -81,7 +82,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/50 to-background" />
       </div>
 
-      <div className="container relative z-10 mx-auto px-2 mt-19 md:px-6 md:py-2">
+      <div className="container relative z-10 mx-auto px-2 mt-15 md:px-6 md:py-2">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}

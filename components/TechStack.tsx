@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   SiReact,
   SiNextdotjs,
@@ -91,6 +92,19 @@ function SectionLabel({ title }: { title: string }) {
 }
 
 export default function TechStack() {
+  const mobileCoreStack = coreStack.filter((tech) => !tech.mobileOnly);
+  const [activeMobileCoreStack, setActiveMobileCoreStack] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveMobileCoreStack((current) =>
+        current === mobileCoreStack.length - 1 ? 0 : current + 1,
+      );
+    }, 2200);
+
+    return () => window.clearInterval(timer);
+  }, [mobileCoreStack.length]);
+
   return (
     <section className="relative overflow-hidden border-y border-border/60 px-6 py-10 sm:py-14 md:px-10 lg:px-16">
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
@@ -111,7 +125,48 @@ export default function TechStack() {
           </p>
         </motion.div>
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-5 justify-center">
+        <div className="sm:hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mobileCoreStack[activeMobileCoreStack].name}
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -26 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+              className="group relative mx-auto flex min-h-[180px] max-w-xs flex-col items-center justify-center rounded-2xl border border-border/60 bg-card/60 px-4 py-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.12)] backdrop-blur"
+            >
+              <div className="pointer-events-none absolute inset-0 rounded-2xl transition group-hover:ring-1 group-hover:ring-blue-400/60" />
+              {(() => {
+                const TechIcon = mobileCoreStack[activeMobileCoreStack].icon;
+                return (
+                  <>
+                    <TechIcon
+                      className={`h-14 w-14 ${mobileCoreStack[activeMobileCoreStack].iconColor}`}
+                    />
+                    <p className="mt-4 text-sm font-medium text-foreground">
+                      {mobileCoreStack[activeMobileCoreStack].name}
+                    </p>
+                  </>
+                );
+              })()}
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-4 flex justify-center gap-2">
+            {mobileCoreStack.map((tech, index) => (
+              <span
+                key={tech.name}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === activeMobileCoreStack
+                    ? "w-6 bg-primary"
+                    : "w-2 bg-border"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden grid-cols-2 justify-center gap-4 sm:grid lg:grid-cols-5">
           {coreStack.map((tech, index) => (
             <motion.div
               key={tech.name}

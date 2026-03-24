@@ -38,7 +38,7 @@ export default function Page() {
             theme={theme}
             onToggleTheme={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
           />
-          <main>
+          <main className="pb-28 lg:pb-0">
             <Hero />
             <About />
             <TechStack />

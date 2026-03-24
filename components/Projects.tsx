@@ -368,7 +368,7 @@ const FrontCoverPage = forwardRef<HTMLDivElement>((_, ref) => (
           />
 
           <div
-            className="py-3"
+            className="py-3 "
             style={{
               display: "flex",
               gap: "clamp(6px,2vw,12px)",
@@ -388,22 +388,24 @@ const FrontCoverPage = forwardRef<HTMLDivElement>((_, ref) => (
                   gap: 3,
                 }}
               >
-                <div
-                  style={{
-                    width: "clamp(28px,6vw,42px)",
-                    height: "clamp(28px,6vw,42px)",
-                    background:
-                      "linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04))",
-                    backdropFilter: "blur(4px)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: "clamp(6px,1.2vw,10px)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: `0 4px 14px rgba(0,0,0,0.4), 0 0 8px ${color}33`,
-                  }}
-                >
-                  <Icon style={{ fontSize: "clamp(14px,3vw,22px)", color }} />
+                <div className="hidden sm:flex">
+                  <div
+                    style={{
+                      width: "clamp(28px,6vw,42px)",
+                      height: "clamp(28px,6vw,42px)",
+                      background:
+                        "linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04))",
+                      backdropFilter: "blur(4px)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: "clamp(6px,1.2vw,10px)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: `0 4px 14px rgba(0,0,0,0.4), 0 0 8px ${color}33`,
+                    }}
+                  >
+                    <Icon style={{ fontSize: "clamp(14px,3vw,22px)", color }} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -791,7 +793,6 @@ const ContentPage = forwardRef<HTMLDivElement, CProps>(
 
           <div className="text-[9px] tracking-[0.22em] opacity-30 mt-2.5 uppercase font-medium">
             Page {pageNo}
-            
           </div>
         </div>
       </div>
@@ -945,31 +946,31 @@ export default function Projects() {
   }, [phase, scheduleNext]);
 
   /* ── Manual controls ────────────────────────────────────────────────── */
-  const goNext = () => {
-    if (phase !== "reading" || isFlipping || busyRef.current) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    const book = pf();
-    if (!book) return;
-    const cur = book.getCurrentPageIndex();
-    if (cur >= LAST_PAGE - 1) {
-      doFlipOver();
-    } else {
-      busyRef.current = true;
-      book.flipNext();
-    }
-  };
-  const goPrev = () => {
-    if (phase !== "reading" || isFlipping || busyRef.current) return;
-    busyRef.current = true;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    pf()?.flipPrev();
-  };
-  const goTo = (spreadIndex: number) => {
-    if (phase !== "reading" || isFlipping || busyRef.current) return;
-    busyRef.current = true;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    pf()?.flip(spreadIndex * 2);
-  };
+  // const goNext = () => {
+  //   if (phase !== "reading" || isFlipping || busyRef.current) return;
+  //   if (timerRef.current) clearTimeout(timerRef.current);
+  //   const book = pf();
+  //   if (!book) return;
+  //   const cur = book.getCurrentPageIndex();
+  //   if (cur >= LAST_PAGE - 1) {
+  //     doFlipOver();
+  //   } else {
+  //     busyRef.current = true;
+  //     book.flipNext();
+  //   }
+  // };
+  // const goPrev = () => {
+  //   if (phase !== "reading" || isFlipping || busyRef.current) return;
+  //   busyRef.current = true;
+  //   if (timerRef.current) clearTimeout(timerRef.current);
+  //   pf()?.flipPrev();
+  // };
+  // const goTo = (spreadIndex: number) => {
+  //   if (phase !== "reading" || isFlipping || busyRef.current) return;
+  //   busyRef.current = true;
+  //   if (timerRef.current) clearTimeout(timerRef.current);
+  //   pf()?.flip(spreadIndex * 2);
+  // };
 
   const onInit = useCallback(() => {
     scheduleNext();
@@ -1049,7 +1050,7 @@ export default function Projects() {
               minHeight={160}
               maxHeight={700}
               showCover={true}
-              flippingTime={650}
+              flippingTime={1150}
               usePortrait={false}
               startPage={0}
               drawShadow={true}
@@ -1072,7 +1073,7 @@ export default function Projects() {
           </div>
 
           {/* Controls */}
-          <div className="mt-8 flex items-center justify-between w-full max-w-lg px-1 relative z-30">
+          {/* <div className="mt-8 flex items-center justify-between w-full max-w-lg px-1 relative z-30">
             <Button
               type="button"
               variant="outline"
@@ -1115,7 +1116,7 @@ export default function Projects() {
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
-          </div>
+          </div> */}
 
           <p className="text-center mt-3 text-xs text-muted-foreground/60 tracking-widest uppercase">
             {currentSpread + 1} / {totalSpreads}
