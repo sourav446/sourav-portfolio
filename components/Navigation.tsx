@@ -139,8 +139,8 @@ export default function Navigation({ theme, onToggleTheme }: NavigationProps) {
                 href={link.href}
                 className="flex min-w-0 flex-1 flex-col items-center justify-center rounded-[1.4rem] px-2 py-2 text-center text-[11px] font-medium text-muted-foreground transition hover:bg-muted/40 hover:text-foreground sm:text-xs"
               >
-                <Icon className="mb-1 h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                <span className="truncate text-white">{link.name}</span>
+                <Icon className="mb-1 h-4 w-4 text-foreground sm:h-5 sm:w-5" />
+                <span className="truncate text-foreground">{link.name}</span>
               </a>
             );
           })}

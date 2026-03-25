@@ -15,53 +15,89 @@ import {
 /* ─── Data ──────────────────────────────────────────────────────────────── */
 const highlights = [
   {
-    title: "Reusable UI Component System",
+    title: "Reusable UI Components",
     description:
-      "Built reusable and scalable React components to maintain UI consistency across LMS, E-commerce, and internal tools. Focused on clean architecture and responsive design using Tailwind CSS.",
-    tags: ["React.js", "Component Architecture", "Tailwind"],
+      "Built scalable React components for consistent UI across apps with clean architecture.",
+    tags: ["React", "Components", "Tailwind"],
   },
   {
     title: "Efficient API Integration",
     description:
-      "Implemented API integration using React Query with caching, background refetching, and error handling to improve performance and maintain reliable frontend data flow.",
+      "Integrated APIs using React Query with caching, refetching, and error handling.",
     tags: ["React Query", "REST APIs"],
   },
   {
-    title: "Real-Time Collaboration Features",
+    title: "Real-Time Features",
     description:
-      "Developed real-time chat and workflow updates using Socket.IO, enabling seamless communication and live task updates within internal applications.",
+      "Developed live chat and updates using Socket.IO for seamless collaboration.",
     tags: ["Socket.IO", "Real-time"],
   },
   {
-    title: "Drag-and-Drop Sprint Planning",
+    title: "Sprint Planning Board",
     description:
-      "Built interactive sprint boards with drag-and-drop functionality using @dnd-kit to improve task prioritization and team workflow visibility.",
-    tags: ["@dnd-kit", "Sprint Planning"],
+      "Built drag-and-drop boards using @dnd-kit for better task tracking and workflows.",
+    tags: ["@dnd-kit", "Agile"],
   },
   {
-    title: "Role-Based Access Control",
+    title: "Access Control System",
     description:
-      "Implemented role-based access control to manage permissions across admin, managers, and team members, ensuring secure and structured workflows.",
+      "Implemented role-based access for secure and structured user permissions.",
     tags: ["RBAC", "Security"],
   },
   {
-    title: "E-Commerce Platform Modules",
+    title: "E-Commerce Modules",
     description:
-      "Developed product listings, cart, checkout flows, and order management dashboards to support scalable e-commerce operations.",
+      "Developed product, cart, and checkout flows for scalable e-commerce systems.",
     tags: ["E-commerce", "Orders"],
   },
   {
-    title: "Enterprise Project Management Tool",
+    title: "Project Management Tool",
     description:
-      "Built task management interfaces, approval flows, and sprint dashboards to support enterprise project workflows.",
+      "Built task dashboards, approval flows, and sprint tracking for enterprise use.",
     tags: ["PMT", "Workflow"],
   },
   {
     title: "Performance Optimization",
     description:
-      "Improved application performance through lazy loading, optimized hooks, and responsive UI design based on Figma layouts.",
+      "Improved performance using lazy loading, optimized hooks, and efficient rendering.",
     tags: ["Performance", "UX"],
   },
+  {
+    title: "User Experience Focus",
+    description:
+      "Enhanced usability with intuitive layouts and user-friendly interactions.",
+    tags: ["UX", "Design"],
+  },
+  {
+    title: "Future UX Award",
+    description:
+      "Recognized for delivering modern and intuitive UI experiences in projects.",
+    tags: ["Award", "UX"],
+  },
+  {
+    title: "Agile Collaboration",
+    description:
+      "Worked in agile teams to deliver features efficiently within sprint cycles.",
+    tags: ["Agile", "Teamwork"],
+  },
+  {
+    title: "Version Control",
+    description:
+      "Managed code using Git and GitHub for collaboration and version tracking.",
+    tags: ["Git", "GitHub"],
+  },
+  {
+    title: "Responsive Design",
+    description:
+      "Built mobile-first responsive layouts ensuring seamless experience across devices.",
+    tags: ["Responsive", "UI"],
+  },
+  {
+  title: "More Chapters Loading",
+  description:
+    "Continuously building, learning, and delivering scalable solutions with modern technologies with AI.",
+  tags: ["Developing"],
+}
 ];
 
 const CONTENT_COUNT = highlights.length;
@@ -777,16 +813,15 @@ const ContentPage = forwardRef<HTMLDivElement, CProps>(
 
         {/* content */}
         <div className="relative z-1 flex flex-col h-full p-[clamp(14px,3vw,22px)]">
+
+          <h3 className="text-[clamp(0.8rem,1.8vw,1rem)] font-bold leading-[1.3] mb-2.5">
+            {title}
+          </h3>
           <div className="flex flex-wrap gap-1.25 mb-4">
             {tags.map((t) => (
               <Tag key={t} label={t} />
             ))}
           </div>
-
-          <h3 className="text-[clamp(0.8rem,1.8vw,1rem)] font-bold leading-[1.3] mb-2.5">
-            {title}
-          </h3>
-
           <p className="text-[clamp(0.64rem,1.1vw,0.76rem)] leading-[1.72] text-[#6b5a45] flex-1 m-0">
             {description}
           </p>
