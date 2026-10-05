@@ -1,114 +1,55 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { Briefcase, Calendar } from "lucide-react";
+import AwardButton from "@/components/AwardButton";
+import { experience } from "@/lib/content";
+import { FadeIn, SectionHeader, item } from "@/components/motion/Reveal";
 
 export default function Experience() {
   return (
-    <section id="experience" className="container mx-auto px-6 py-18 md:px-10 lg:px-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-10"
-      >
-        <h2 className="text-4xl font-bold ">Work Experience</h2>
-        <div className="h-1 w-20 bg-primary rounded-full" />
-      </motion.div>
+    <section id="experience" className="shell scroll-mt-20 pb-20 md:pb-28">
+      <SectionHeader index="05" title="Experience" />
 
-      <div className="relative border-l border-white/10 ml-3 md:ml-6 space-y-6">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="relative pl-8 md:pl-12"
-        >
-          <div className="absolute -left-1.5 top-2 h-3 w-3 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]" />
+      <div className="mt-10 space-y-5 md:mt-12">
+        {experience.map((job) => (
+          <div key={job.role} className="rounded-md border border-border bg-card p-6 md:p-8 lg:p-10">
+            <FadeIn className="grid-12 gap-y-8">
+              {/* Role */}
+              <motion.div variants={item} className="col-span-4 md:col-span-4 lg:sticky lg:top-28 lg:self-start">
+                <p className="label flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  {job.period}
+                </p>
+                <h3 className="mt-3 font-display text-3xl font-medium tracking-[-0.03em]">{job.role}</h3>
+                <p className="mt-1 text-muted-foreground">
+                  {job.company} · {job.location}
+                </p>
+                <p className="mt-5 text-[15px] leading-relaxed text-foreground/75">{job.summary}</p>
+                {job.award && <AwardButton label={job.award} />}
+              </motion.div>
 
-          <div className="bg-card/50 backdrop-blur-sm border border-white/10 p-6 md:p-8 rounded-2xl hover:bg-card/80 transition-colors">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-              <h3 className="text-2xl font-bold text-foreground">
-                Associate Software Developer (Frontend)
-              </h3>
-              <div className="flex items-center text-sm text-accent bg-accent/10 px-3 py-1 rounded-full w-fit">
-                <Calendar className="w-4 h-4 mr-2" />
-                Feb 17, 2025 - Present
+              {/* Contributions across all products */}
+              <div className="col-span-4 md:col-span-8">
+                <p className="label mb-3">Key contributions</p>
+                <FadeIn as="ul" stagger={0.05} className="space-y-1">
+                  {job.points.map((point) => (
+                    <motion.li
+                      key={point}
+                      variants={item}
+                      className="group -mx-3 flex gap-3 rounded-md px-3 py-1.5 text-[15px] leading-relaxed text-foreground/75 transition-colors duration-300 hover:bg-background hover:text-foreground"
+                    >
+                      {/* Dot stretches into an orange marker on hover */}
+                      <span className="mt-[0.65em] h-1.5 w-1.5 shrink-0 rounded-full bg-foreground transition-[width,background-color] duration-500 ease-out-expo group-hover:w-5 group-hover:bg-accent" />
+                      <span className="transition-transform duration-500 ease-out-expo group-hover:translate-x-1">
+                        {point}
+                      </span>
+                    </motion.li>
+                  ))}
+                </FadeIn>
               </div>
-            </div>
-
-            <div className="flex items-center text-lg text-muted-foreground mb-6">
-              <Briefcase className="w-5 h-5 mr-2" />
-              Aim Window Info Tech, Bengaluru
-            </div>
-
-            <ul className="space-y-3 text-muted-foreground list-disc list-inside">
-              <li>
-                Developed scalable and reusable UI components using React.js and
-                Next.js, following modular architecture and clean code
-                principles across LMS, E-commerce, and Project Management (PMT)
-                platforms.
-              </li>
-
-              {/* <li>
-                Designed and integrated backend APIs for internal modules and
-                portfolio projects, handling authentication, CRUD operations,
-                and secure data flow.
-              </li> */}
-
-              <li>
-                Integrated RESTful APIs using React Query with optimized
-                caching, background refetching, and mutation handling to enhance
-                performance and reduce unnecessary network requests.
-              </li>
-
-              <li>
-                Collaborated closely with the backend development team to define
-                API contracts, validate request/response structures, handle edge
-                cases, and ensure seamless frontend–backend integration.
-              </li>
-
-              <li>
-                Worked alongside the design team using Figma to translate UI/UX
-                prototypes into responsive, pixel-accurate interfaces while
-                maintaining design consistency and accessibility standards.
-              </li>
-
-              <li>
-                Contributed to LMS platform development including real-time chat
-                functionality, approval workflows, and role-based access control
-                systems.
-              </li>
-
-              <li>
-                Developed E-commerce modules such as product management, stock
-                handling, order workflows, and dynamic pricing logic with
-                responsive UI design.
-              </li>
-
-              <li>
-                Implemented sprint planning and task management features in PMT
-                with drag-and-drop functionality and dynamic state
-                synchronization.
-              </li>
-
-              <li>
-                Optimized state management using React Hooks and improved
-                rendering performance to minimize re-renders and enhance UI
-                responsiveness.
-              </li>
-
-              <li>
-                Used Git and GitHub for version control, feature branching, pull
-                requests, and collaborative code reviews within an Agile
-                development workflow.
-              </li>
-
-              <li>
-                Built and deployed a personal portfolio using Next.js with
-                backend API integration, showcasing real-world project
-                implementations and performance-focused design.
-              </li>
-            </ul>
+            </FadeIn>
           </div>
-        </motion.div>
+        ))}
       </div>
     </section>
   );

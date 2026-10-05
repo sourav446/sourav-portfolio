@@ -1,38 +1,42 @@
-"use client";
-
-import { QueryClientProvider } from "@tanstack/react-query";
+import Providers from "@/components/Providers";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import About from "@/components/About";
+import Work from "@/components/Work";
+import CaseStudies from "@/components/CaseStudies";
 import TechStack from "@/components/TechStack";
 import Experience from "@/components/Experience";
-import Projects from "@/components/Projects";
-import Contact from "@/components/Contact";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { queryClient } from "@/lib/queryClient";
+import About from "@/components/About";
+import ContactDialog from "@/components/Contact";
+import Footer from "@/components/Footer";
+import PageChrome from "@/components/motion/PageChrome";
 
 export default function Page() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground">
-        <TooltipProvider>
-          <Toaster />
-          <Navigation />
-          <main>
-            <Hero />
-            <About />
-            <TechStack />
-            <Experience />
-            <Projects />
-            <Contact />
-          </main>
-        </TooltipProvider>
-
-        <footer className="py-8 text-center text-sm text-muted-foreground border-t border-white/5">
-          <p>&copy; {new Date().getFullYear()} Sourav Velusamy. All rights reserved.</p>
-        </footer>
-      </div>
-    </QueryClientProvider>
+    <Providers>
+      <a
+        href="#projects"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:text-background"
+      >
+        Skip to content
+      </a>
+      <PageChrome />
+      <Navigation />
+      <main>
+        {/* 01 */}
+        <Hero />
+        {/* 02 */}
+        <Work />
+        {/* 03 */}
+        <CaseStudies />
+        {/* 04 */}
+        <TechStack />
+        {/* 05 */}
+        <Experience />
+        {/* 06 */}
+        <About />
+      </main>
+      <Footer />
+      <ContactDialog />
+    </Providers>
   );
 }

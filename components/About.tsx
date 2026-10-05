@@ -1,125 +1,89 @@
-import { motion } from "framer-motion";
-import { User, Code2, Globe2, Coffee } from "lucide-react";
+"use client";
+
+import { useRef } from "react";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { quickFacts } from "@/lib/content";
+import { FadeIn, SectionHeader, item } from "@/components/motion/Reveal";
+import HeroCollage from "@/components/HeroCollage";
+import { useFinePointer } from "@/components/motion/useFinePointer";
 
 export default function About() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
+  const collageRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(collageRef, { once: true, margin: "0px 0px -20% 0px" });
+  const fine = useFinePointer();
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6 },
-    },
-  };
-
-  const stats = [
-    {
-      icon: Code2,
-      label: "Experience",
-      value: "1 Year",
-      color: "text-blue-400",
-    },
-    {
-      icon: Globe2,
-      label: "Location",
-      value: "Bengaluru",
-      color: "text-purple-400",
-    },
-    {
-      icon: Coffee,
-      label: "Joined",
-      value: "Feb 2025",
-      color: "text-amber-400",
-    },
-  ];
+  // Cursor (-1..1) over the section drives the collage parallax and code-card tilt.
+  const spring = { stiffness: 90, damping: 20, mass: 0.6 };
+  const mx = useSpring(useMotionValue(0), spring);
+  const my = useSpring(useMotionValue(0), spring);
+  const rotateY = useTransform(mx, (v) => v * 6);
+  const rotateX = useTransform(my, (v) => -v * 6);
 
   return (
     <section
       id="about"
-      className="relative z-0 overflow-visible bg-background px-6 py-24 md:px-10 lg:px-16"
+      onPointerMove={(e) => {
+        if (!fine) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        mx.set(((e.clientX - r.left) / r.width - 0.5) * 2);
+        my.set(((e.clientY - r.top) / r.height - 0.5) * 2);
+      }}
+      onPointerLeave={() => {
+        mx.set(0);
+        my.set(0);
+      }}
+      className="shell scroll-mt-20 pb-20 md:pb-28"
     >
-      <div className="container mx-auto px-6">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={containerVariants}
-          className="grid md:grid-cols-2 gap-20 items-center"
-        >
-          <motion.div
-            variants={itemVariants}
-            className="relative order-2 md:order-1 flex justify-center md:justify-start"
-          >
-            <div
-              id="about-image-zone"
-              className="relative flex h-80 w-80 items-center justify-center rounded-3xl border border-white/5 bg-white/[0.02]"
+      <SectionHeader index="06" title="About" />
+
+      <div className="grid-12 mt-10 items-center gap-y-16 md:mt-14">
+        {/* Workspace collage + code card */}
+        <div ref={collageRef} className="col-span-4 md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-1">
+          <HeroCollage play={inView} mx={mx} my={my} rotateX={rotateX} rotateY={rotateY} />
+        </div>
+
+        {/* Bio + quick facts */}
+        <div className="col-span-4 md:col-span-12 lg:col-span-5 lg:col-start-8">
+          <FadeIn stagger={0.08} className="space-y-5">
+            <motion.p
+              variants={item}
+              className="font-display text-2xl leading-[1.3] tracking-[-0.02em] md:text-[28px]"
             >
-              <div className="absolute inset-0 bg-linear-to-tr from-primary/5 to-accent/5 opacity-50" />
-              {/* <div className="text-white/5 font-display text-lg select-none">IMAGE.ZONE</div> */}
-            </div>
+              Frontend developer with 1.7+ years building production web apps with{" "}
+              <strong className="font-medium">React.js, Next.js and TypeScript</strong>.
+            </motion.p>
+            <motion.p variants={item} className="text-base leading-relaxed text-muted-foreground">
+              At Aim Window Info Tech I own the frontend of three production
+              platforms — a WebRTC live-class system for 250+ participants per
+              room, an LMS serving 1k+ learners, and an e-commerce storefront
+              with 10k+ products. I built the shared library of 50+ components
+              they run on, and won the Future UX Star Award for UI quality.
+            </motion.p>
+          </FadeIn>
 
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-accent/5 rounded-full blur-3xl animate-pulse" />
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="space-y-8 order-1 md:order-2 relative z-10"
-          >
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold font-display flex items-center gap-3">
-                <User className="text-primary w-8 h-8" /> About Me
-              </h2>
-              <div className="h-1.5 w-24 bg-linear-to-tr from-primary to-accent rounded-full" />
-            </div>
-
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              I am an Associate Software Developer specializing in React.js and
-              Next.js, based in Bengaluru. At Aim Window Info Tech, I build
-              scalable web applications across LMS, E-commerce, and Project
-              Management platforms. I focus on reusable UI architecture, REST
-              API integration, real-time features, and performance optimization
-              while collaborating closely with design and backend teams in Agile
-              environments.
-            </p>
-
-            <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3 md:gap-6">
-              {stats.map((stat) => (
-                <motion.div
-                  key={stat.label}
-                  whileHover={{
-                    y: -5,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  }}
-                  className="p-4 rounded-2xl bg-card/30 border border-white/5 text-center transition-colors"
-                >
-                  <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
-                  <div className="text-xl md:text-2xl font-bold">
-                    {stat.value}
-                  </div>
-                  <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-widest">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <p className="text-muted-foreground leading-relaxed">
-              Core Stack: React.js, Next.js, TypeScript, JavaScript, React
-              Query, Node.js, MongoDB, REST APIs, Socket.IO, Tailwind CSS, Git &
-              GitHub.
-            </p>
-          </motion.div>
-        </motion.div>
+          <FadeIn as="dl" stagger={0.05} className="mt-10">
+            {quickFacts.map((f) => (
+              <motion.div
+                key={f.label}
+                variants={item}
+                className="group relative flex justify-between gap-6 overflow-hidden border-t border-border py-3 last:border-b"
+              >
+                {/* Ink sweep on hover */}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 origin-left scale-x-0 bg-foreground transition-transform duration-500 ease-out-expo group-hover:scale-x-100"
+                />
+                <dt className="label relative flex items-center gap-2 pt-0.5 transition-[color,transform] duration-500 ease-out-expo group-hover:translate-x-3 group-hover:!text-background/60">
+                  <span className="h-1.5 w-0 rounded-full bg-accent transition-[width] duration-500 ease-out-expo group-hover:w-1.5" />
+                  {f.label}
+                </dt>
+                <dd className="relative text-right text-sm font-medium transition-[color,transform] duration-500 ease-out-expo group-hover:-translate-x-3 group-hover:text-background">
+                  {f.value}
+                </dd>
+              </motion.div>
+            ))}
+          </FadeIn>
+        </div>
       </div>
     </section>
   );

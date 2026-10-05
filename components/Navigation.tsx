@@ -1,104 +1,228 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Menu, X, Linkedin } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { navLinks, profile } from "@/lib/content";
+import { EASE } from "@/components/motion/Reveal";
+import Magnetic from "@/components/motion/Magnetic";
+import { openContact } from "@/components/Contact";
+import FillButton from "@/components/motion/FillButton";
+
+/** Which section is currently in the middle band of the viewport. */
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState<string | null>(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return active;
+}
+
+// Solid (not backdrop-blurred): a blur behind fixed elements is recomputed on every scroll frame.
+const glass = "border border-border/80 bg-background/95";
+
+/** "Contact" opens the contact panel instead of jumping to the footer. */
+function contactClick(e: React.MouseEvent, href: string, after?: () => void) {
+  if (href !== "#contact") return after?.();
+  e.preventDefault();
+  e.stopPropagation(); // keep Lenis from also scrolling to the footer
+  after?.();
+  openContact();
+}
+
 
 export default function Navigation() {
-  const [scrolled, setScrolled] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const { scrollY } = useScroll();
+  // "top" is observed too, so scrolling back into the hero clears the highlight.
+  const active = useActiveSection(["top", ...navLinks.map((l) => l.href.slice(1))]);
+
+  // Once the big hero name has scrolled away, the monogram expands to the full name.
+  useMotionValueEvent(scrollY, "change", (y) => setPastHero(y > window.innerHeight * 0.45));
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = "";
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const navLinks = [
-    { name: "About", href: "#about" },
-    { name: "Experience", href: "#experience" },
-    { name: "Highlights", href: "#projects" },
-    { name: "Contact", href: "#contact" },
-  ];
+  }, [open]);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-md border-b border-white/10 py-4" : "bg-transparent py-6"
-      }`}
-    >
-      <div className="container mx-auto px-16 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold font-display tracking-tighter  transition-colors">
-          Sourav Velusamy
-        </Link>
-
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-sm font-medium hover:text-accent transition-colors relative group"
-            >
-              {link.name}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full" />
-            </a>
-          ))}
-          {/* <a
-            href="https://www.linkedin.com/in/souravgokul11"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Button variant="outline" size="sm" className="border-primary/50 hover:bg-primary/20 hover:text-primary-foreground ml-4">
-              LinkedIn
-            </Button>
-          </a> */}
-        </div>
-
-        <button
-          className="md:hidden text-foreground hover:text-accent transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
+    <>
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
+        <nav
+          className="shell relative flex h-20 items-center justify-between"
+          aria-label="Primary"
         >
-          {isOpen ? <X /> : <Menu />}
-        </button>
-      </div>
+          {/* Monogram → full name */}
+          <a
+            href="#top"
+            aria-label={`${profile.name} — back to top`}
+            className={`pointer-events-auto flex h-11 items-center gap-2 rounded-full pr-4 pl-1 transition-colors duration-500 ${
+              open ? "text-background" : glass
+            }`}
+          >
+            <span
+              className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-semibold tracking-tight transition-colors duration-500 ${
+                open ? "bg-background text-foreground" : "bg-foreground text-background"
+              }`}
+            >
+              SG
+            </span>
+            <span className="relative overflow-hidden font-display text-[15px] font-medium tracking-tight whitespace-nowrap">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={pastHero ? "name" : "short"}
+                  initial={{ y: "100%" }}
+                  animate={{ y: "0%" }}
+                  exit={{ y: "-100%" }}
+                  transition={{ duration: 0.45, ease: EASE }}
+                  className="block"
+                >
+                  {pastHero ? (
+                    <>
+                      Sourav Gokul V<span className="text-accent">.</span>
+                    </>
+                  ) : (
+                    "Portfolio"
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+          </a>
+
+          {/* Centered pill with a sliding active-section highlight */}
+          <ul
+            className={`pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full p-1 lg:flex ${glass}`}
+          >
+            {navLinks.map((link) => {
+              const isActive = active === link.href.slice(1);
+              return (
+                <li key={link.href} className="relative">
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      className="absolute inset-0 rounded-full bg-foreground"
+                    />
+                  )}
+                  <a
+                    href={link.href}
+                    onClick={(e) => contactClick(e, link.href)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={`relative block rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-300 ${
+                      isActive ? "text-background" : "hover:text-accent"
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Status + résumé */}
+          <div className="pointer-events-auto hidden items-center gap-2 lg:flex">
+            <span className={`hidden h-11 items-center gap-2 rounded-full px-4 xl:flex ${glass}`}>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+              </span>
+              <span className="text-[13px] font-medium">Available</span>
+            </span>
+            <Magnetic strength={0.3}>
+              <FillButton
+                href={profile.resume}
+                target="_blank"
+                rel="noreferrer"
+                fillClass="bg-foreground"
+                className="h-11 bg-accent px-5 text-[13px] font-medium text-accent-foreground"
+              >
+                Résumé ↗
+              </FillButton>
+            </Magnetic>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            className={`pointer-events-auto flex h-11 items-center rounded-full px-5 text-[13px] font-medium transition-colors lg:hidden ${
+              open ? "bg-background text-foreground" : glass
+            }`}
+          >
+            {open ? "Close" : "Menu"}
+          </button>
+        </nav>
+      </header>
 
       <AnimatePresence>
-        {isOpen && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-card border-b border-border md:hidden"
+            id="mobile-menu"
+            data-lenis-prevent
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)" }}
+            exit={{ clipPath: "inset(0 0 100% 0)" }}
+            transition={{ duration: 0.7, ease: EASE }}
+            className="fixed inset-0 z-40 flex flex-col bg-foreground px-5 pt-28 pb-8 text-background sm:px-8 lg:hidden"
           >
-            <div className="flex flex-col p-6 gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-lg font-medium hover:text-accent transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </a>
+            <ul className="space-y-1">
+              {navLinks.map((link, i) => (
+                <li key={link.href} className="overflow-hidden">
+                  <motion.a
+                    href={link.href}
+                    onClick={(e) => contactClick(e, link.href, () => setOpen(false))}
+                    initial={{ y: "100%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 0.8, ease: EASE, delay: 0.15 + i * 0.05 }}
+                    className="flex items-baseline gap-4 font-display text-5xl font-medium tracking-[-0.04em]"
+                  >
+                    <span className="font-mono text-[11px] tracking-normal opacity-50">
+                      0{i + 1}
+                    </span>
+                    {link.label}
+                  </motion.a>
+                </li>
               ))}
-              <div className="flex gap-4 mt-4 pt-4 border-t border-border">
-                <a
-                  href="https://www.linkedin.com/in/souravgokul11"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-accent transition-colors"
-                >
-                  <Linkedin size={20} />
-                </a>
-              </div>
+            </ul>
+            <a
+              href={profile.resume}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-background text-sm font-medium text-foreground"
+            >
+              View résumé
+            </a>
+            <div className="mt-auto flex justify-between pt-8 font-mono text-[11px] uppercase tracking-[0.14em] opacity-60">
+              <a href={profile.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn ↗
+              </a>
+              <a href={profile.github} target="_blank" rel="noreferrer">
+                GitHub ↗
+              </a>
+              <a href={`mailto:${profile.email}`}>Email ↗</a>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 }

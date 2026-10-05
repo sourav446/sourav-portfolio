@@ -1,225 +1,432 @@
-import { FormEvent, useState } from "react";
-import { motion } from "framer-motion";
-import { Linkedin, Mail, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { ContactPayload } from "@/lib/api/contact";
-import { useContactQuery } from "@/hooks/useContactQuery";
-import { useEffect } from "react";
+"use client";
 
-export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [status, setStatus] = useState<{
-    type: "idle" | "success" | "error";
-    message: string;
-  }>({
-    type: "idle",
-    message: "",
-  });
-  const [request, setRequest] = useState<{
-    id: number;
-    payload: ContactPayload;
-  } | null>(null);
-  const { isFetching, isSuccess, isError, error } = useContactQuery(request);
+import { FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpRight, Check, Copy, FileText, Loader2, Mail, X } from "lucide-react";
+import { profile } from "@/lib/content";
+import { useContactMutation } from "@/hooks/useContactQuery";
+import { EASE } from "@/components/motion/Reveal";
+import Magnetic from "@/components/motion/Magnetic";
+import FillButton from "@/components/motion/FillButton";
+import { useSpotlight } from "@/components/motion/useSpotlight";
 
-  useEffect(() => {
-    if (isSuccess && request) {
-      setStatus({
-        type: "success",
-        message: "Message sent successfully. I will get notified by email/SMS.",
-      });
-      setFormData({ name: "", email: "", subject: "", message: "" });
-      setRequest(null);
+const EMPTY = { name: "", email: "", subject: "", message: "", company: "" };
+
+function Field({
+  index,
+  label,
+  multiline,
+  ...props
+}: {
+  index: string;
+  label: string;
+  multiline?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement> &
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const id = useId();
+  const base =
+    "peer w-full resize-none border-0 border-b border-input bg-transparent pt-2 pb-3 text-lg outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-foreground focus-visible:outline-none";
+  return (
+    <div className="group relative">
+      <label htmlFor={id} className="label flex gap-3 group-focus-within:!text-foreground">
+        <span>{index}</span>
+        {label}
+      </label>
+      {multiline ? (
+        <textarea id={id} rows={4} className={base} {...props} />
+      ) : (
+        <input id={id} className={base} {...props} />
+      )}
+      {/* Accent underline grows on focus */}
+      <span className="pointer-events-none absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-accent transition-transform duration-700 ease-out-expo peer-focus:scale-x-100" />
+    </div>
+  );
+}
+
+/** Email address that copies itself on click, with a small "Copied" toast. */
+function CopyEmail({ email }: { email: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard can be blocked (permissions, insecure context) — fall back to the mail app.
+      window.location.href = `mailto:${email}`;
     }
-  }, [isSuccess, request]);
-
-  useEffect(() => {
-    if (isError) {
-      setStatus({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to send your message right now.",
-      });
-      setRequest(null);
-    }
-  }, [isError, error]);
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus({ type: "idle", message: "" });
-    setRequest({
-      id: Date.now(),
-      payload: formData,
-    });
   };
 
   return (
-    <section id="contact" className="container mx-auto px-6 py-24 md:px-10 lg:px-16">
-      <div className="grid md:grid-cols-2 gap-16">
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={`Copy email address ${email}`}
+        className="group/copy inline-flex items-center gap-1.5 font-medium underline-offset-4 transition-colors hover:text-accent hover:underline"
+      >
+        {email}
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-accent" />
+        ) : (
+          <Copy className="h-3.5 w-3.5 opacity-50 transition-opacity group-hover/copy:opacity-100" />
+        )}
+      </button>
+      <span aria-live="polite" className="sr-only">
+        {copied ? "Email address copied" : ""}
+      </span>
+      <AnimatePresence>
+        {copied && (
+          <motion.span
+            aria-hidden
+            initial={{ opacity: 0, y: 6, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.3, ease: EASE }}
+            className="absolute right-0 bottom-full mb-2 rounded-full bg-foreground px-3 py-1 font-mono text-[10px] tracking-[0.12em] whitespace-nowrap text-background uppercase"
+          >
+            Copied ✓
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}
+
+const OPEN_EVENT = "contact:open";
+
+/** Opens the contact panel from anywhere (footer "Get in touch", hero "Let's Talk"). */
+export function openContact() {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
+/**
+ * Contact panel: slides up over the page when opened with `openContact()`.
+ * Mounted once on the page; Esc, the close button or the backdrop close it.
+ */
+export default function ContactDialog() {
+  const [open, setOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const onOpen = () => {
+      returnFocus.current = document.activeElement as HTMLElement | null;
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_EVENT, onOpen);
+  }, []);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    returnFocus.current?.focus();
+  }, []);
+
+  // Esc to close, lock page scroll while open.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const t = setTimeout(() => closeRef.current?.focus(), 50);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = prev;
+      clearTimeout(t);
+    };
+  }, [open, close]);
+
+  return (
+    <AnimatePresence>
+      {open && (
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          key="contact"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-title"
+          className="fixed inset-0 z-[90]"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
         >
-          <h2 className="mb-6 text-4xl font-bold sm:text-5xl">
-            Let&apos;s connect <br />
-            <span className="text-primary">and build.</span>
-          </h2>
-          <p className="text-xl text-muted-foreground mb-12">
-            I am currently working as an Associate Software Developer (Frontend)
-            and open to meaningful frontend opportunities.
-          </p>
+          {/* Backdrop */}
+          <motion.button
+            type="button"
+            aria-label="Close contact"
+            tabIndex={-1}
+            onClick={close}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 cursor-default bg-foreground/60"
+          />
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center border border-white/10 text-accent">
-                <MapPin />
+          {/* Panel: rises from the bottom edge with a rounded clip reveal */}
+          <motion.div
+            data-lenis-prevent
+            initial={{ y: "18%", clipPath: "inset(100% 0% 0% 0% round 32px 32px 0 0)" }}
+            animate={{ y: "0%", clipPath: "inset(0% 0% 0% 0% round 32px 32px 0 0)" }}
+            exit={{ y: "12%", clipPath: "inset(100% 0% 0% 0% round 32px 32px 0 0)" }}
+            transition={{ duration: 0.85, ease: EASE }}
+            className="absolute inset-x-0 top-[3svh] bottom-0 overflow-y-auto overscroll-contain bg-background md:top-[5svh]"
+          >
+            <div className="shell relative pt-6 pb-16 md:pt-8 md:pb-20">
+              <div className="flex items-center justify-between">
+                <p className="label flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  Contact
+                </p>
+                <button
+                  ref={closeRef}
+                  type="button"
+                  onClick={close}
+                  aria-label="Close contact"
+                  className="group/close flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-border transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background"
+                >
+                  <X className="h-5 w-5 transition-transform duration-500 ease-out-expo group-hover/close:rotate-90" />
+                </button>
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Location</div>
-                <div className="font-medium text-lg">Bengaluru, India</div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center border border-white/10 text-accent">
-                <Mail />
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Email</div>
-                <div className="font-medium text-lg">souravgokul4@gmail.com</div>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: EASE, delay: 0.3 }}
+              >
+                <ContactBody />
+              </motion.div>
             </div>
-            <div className="mt-8 flex gap-4">
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function ContactBody() {
+  const [form, setForm] = useState(EMPTY);
+  const mutation = useContactMutation();
+  const formSpot = useSpotlight(0);
+
+  const set =
+    (key: keyof typeof EMPTY) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    mutation.mutate(form, { onSuccess: () => setForm(EMPTY) });
+  };
+
+  return (
+    <>
+      <div className="grid-12 mt-8 gap-y-12 md:mt-10">
+        <div className="col-span-4 flex flex-col gap-8 md:col-span-5">
+          <div>
+            <h2 id="contact-title" className="font-display text-5xl font-medium tracking-[-0.04em] md:text-7xl">
+              Let&apos;s talk<span className="text-accent">.</span>
+            </h2>
+            <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
+              Open to Frontend and MERN stack developer roles. Email me
+              directly, or use the form to send a message.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Magnetic>
+              <FillButton
+                href={`mailto:${profile.email}`}
+                className="h-12 bg-foreground px-6 text-sm font-medium text-background"
+              >
+                <Mail className="h-4 w-4" /> Email me
+              </FillButton>
+            </Magnetic>
+            <Magnetic>
               <a
-                href="https://www.linkedin.com/in/souravgokul11"
+                href={profile.resume}
                 target="_blank"
                 rel="noreferrer"
-                aria-label="Visit LinkedIn profile"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 transition-all duration-300 hover:border-primary hover:bg-primary hover:text-white"
+                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground px-6 text-sm font-medium transition-colors duration-300 hover:bg-foreground hover:text-background"
               >
-                <Linkedin size={20} />
+                <FileText className="h-4 w-4" /> Résumé
               </a>
-              <div>
-                <div className="text-sm text-muted-foreground">LinkedIn</div>
-                <a
-                  href="https://www.linkedin.com/in/souravgokul11"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <div className="font-medium text-lg hover:underline">
-                    www.linkedin.com/in/souravgokul11
-                  </div>
-                </a>
-              </div>
-            </div>
+            </Magnetic>
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="bg-card/30 backdrop-blur-sm border border-white/10 p-8 rounded-2xl"
+          <dl className="text-sm">
+            <div className="flex items-center justify-between gap-4 border-t border-border py-3">
+              <dt className="label pt-0.5">Email</dt>
+              <dd>
+                <CopyEmail email={profile.email} />
+              </dd>
+            </div>
+            {[
+              { k: "LinkedIn", v: "in/souravgokul11", href: profile.linkedin },
+              { k: "GitHub", v: "sourav446", href: profile.github },
+              { k: "Location", v: profile.location },
+            ].map((row) => (
+              <div key={row.k} className="flex justify-between gap-4 border-t border-border py-3 last:border-b">
+                <dt className="label pt-0.5">{row.k}</dt>
+                <dd className="font-medium">
+                  {row.href ? (
+                    <a
+                      href={row.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group/link inline-flex items-center gap-1 underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >
+                      {row.v}
+                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                    </a>
+                  ) : (
+                    row.v
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div
+          {...formSpot.handlers}
+          className="group relative col-span-4 rounded-md border border-border bg-card p-6 md:col-span-7 md:col-start-6 md:p-8 [&>*:not(.spotlight-surface):not(.spotlight-border)]:relative"
         >
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium ml-1">Name</label>
-                <Input
-                  required
-                  value={formData.name}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="Your name"
-                  className="bg-background/50 border-white/10 focus:border-primary"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium ml-1">Email</label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      email: event.target.value,
-                    }))
-                  }
-                  placeholder="your@email.com"
-                  className="bg-background/50 border-white/10 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium ml-1">Subject</label>
-              <Input
-                required
-                value={formData.subject}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    subject: event.target.value,
-                  }))
-                }
-                placeholder="Collaboration or role"
-                className="bg-background/50 border-white/10 focus:border-primary"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium ml-1">Message</label>
-              <Textarea
-                required
-                value={formData.message}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    message: event.target.value,
-                  }))
-                }
-                placeholder="Share your requirement..."
-                className="min-h-40 resize-none border-white/10 bg-background/50 focus:border-primary"
-              />
-            </div>
-
-            {status.type !== "idle" && (
-              <p
-                className={
-                  status.type === "success"
-                    ? "text-green-400 text-sm"
-                    : "text-red-400 text-sm"
-                }
+          <span aria-hidden className="spotlight-surface" />
+          <span aria-hidden className="spotlight-border" />
+          <AnimatePresence mode="wait" initial={false}>
+            {mutation.isSuccess ? (
+              <motion.div
+                key="sent"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.6, ease: EASE }}
+                role="status"
+                className="flex min-h-[420px] flex-col items-start justify-center gap-6"
               >
-                {status.message}
-              </p>
-            )}
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                  <Check className="h-5 w-5" />
+                </span>
+                <h3 className="font-display text-4xl font-medium tracking-[-0.04em] md:text-5xl">
+                  Message received.
+                </h3>
+                <p className="max-w-sm text-[15px] leading-relaxed text-muted-foreground">
+                  Thanks for reaching out — I&apos;ll get back to you by email
+                  soon.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => mutation.reset()}
+                  className="label !text-foreground underline underline-offset-4 hover:!text-accent"
+                >
+                  Send another message
+                </button>
+              </motion.div>
+            ) : (
+              <motion.form
+                key="form"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.6, ease: EASE }}
+                onSubmit={handleSubmit}
+                aria-busy={mutation.isPending}
+                className="space-y-10"
+              >
+                {/* Honeypot: hidden from people and screen readers; bots fill it and get dropped. */}
+                <input
+                  type="text"
+                  name="company"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden
+                  value={form.company}
+                  onChange={set("company")}
+                  className="absolute -left-[9999px] h-0 w-0 opacity-0"
+                />
+                <div className="grid gap-10 sm:grid-cols-2">
+                  <Field
+                    index="01"
+                    label="Your name"
+                    required
+                    maxLength={100}
+                    autoComplete="name"
+                    value={form.name}
+                    onChange={set("name")}
+                    placeholder="Name"
+                  />
+                  <Field
+                    index="02"
+                    label="Email"
+                    required
+                    type="email"
+                    maxLength={200}
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={set("email")}
+                    placeholder="Email Address"
+                  />
+                </div>
+                <Field
+                  index="03"
+                  label="Subject"
+                  required
+                  maxLength={150}
+                  value={form.subject}
+                  onChange={set("subject")}
+                  placeholder="Frontend role at…"
+                />
+                <Field
+                  index="04"
+                  label="Message"
+                  multiline
+                  required
+                  maxLength={5000}
+                  value={form.message}
+                  onChange={set("message")}
+                  placeholder="Tell me about the team and what you're building."
+                />
 
-            <Button
-              size="lg"
-              className="w-full"
-              type="submit"
-              disabled={isFetching}
-            >
-              {isFetching ? "Sending..." : "Send Message"}
-            </Button>
-          </form>
-        </motion.div>
+                <div className="flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div role="alert" className="min-h-5 text-sm">
+                    {mutation.isError && (
+                      <p className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-destructive">
+                        {mutation.error instanceof Error
+                          ? mutation.error.message
+                          : "Unable to send your message right now."}{" "}
+                        <a href={`mailto:${profile.email}`} className="font-medium underline underline-offset-2">
+                          Email me instead
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                  <Magnetic>
+                    <FillButton
+                      type="submit"
+                      disabled={mutation.isPending}
+                      className="h-14 gap-3 bg-foreground px-8 text-sm font-medium text-background disabled:cursor-wait disabled:opacity-70"
+                    >
+                      {mutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Sending
+                        </>
+                      ) : (
+                        <>
+                          Send message
+                          <ArrowUpRight className="h-4 w-4 transition-transform duration-500 ease-out-expo group-hover/fill:translate-x-0.5 group-hover/fill:-translate-y-0.5" />
+                        </>
+                      )}
+                    </FillButton>
+                  </Magnetic>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </section>
+    </>
   );
 }

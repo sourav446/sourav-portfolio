@@ -6,12 +6,12 @@ export type ContactPayload = {
   email: string;
   subject: string;
   message: string;
+  /** Honeypot (always empty for real visitors). */
+  company?: string;
 };
 
 export type ContactResponse = {
   ok: boolean;
-  emailSent: boolean;
-  smsSent: boolean;
 };
 
 export async function sendContactMessage(payload: ContactPayload): Promise<ContactResponse> {
