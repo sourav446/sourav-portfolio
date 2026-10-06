@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+/* Wide landscape screens (laptops/desktops). Portrait tablets, even 1024px+, use the stacked layout. */
+@custom-variant desk (@media (width >= 64rem) and (orientation: landscape));
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -174,5 +176,16 @@ html.lenis body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Hero scroll cue (phones): the arrow bobs downward */
+@keyframes scroll-cue-bob {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(4px);
   }
 }

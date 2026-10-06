@@ -248,7 +248,7 @@ export const skills = [
   },
   {
     group: "Tools & practices",
-    items: ["Git & GitHub", "Reusable components", "Performance optimization", "Agile", "Postman", "VS Code", "Docker"],
+    items: ["Git & GitHub", "Reusable components", "Agile", "Performance optimization", "Postman", "VS Code", "Docker"],
   },
   {
     group: "AI",

@@ -25,14 +25,34 @@ import {
   SiWebrtc,
 } from "react-icons/si";
 import { VscVscode } from "react-icons/vsc";
-import { Blocks, ChevronRight, Gauge, LayoutList, Maximize, Minimize, MonitorPlay, Sparkles, MonitorSmartphone, Network, RefreshCw, Server, Store, Users, X } from "lucide-react";
+import {
+  Blocks,
+  ChevronRight,
+  Gauge,
+  LayoutList,
+  Maximize,
+  Minimize,
+  MonitorPlay,
+  Sparkles,
+  MonitorSmartphone,
+  Network,
+  RefreshCw,
+  Server,
+  Store,
+  Users,
+  X,
+} from "lucide-react";
 import { projectsUsing, skillInfo, skills } from "@/lib/content";
 import { EASE, SectionHeader } from "@/components/motion/Reveal";
 import { gsap } from "gsap";
 import { useIsLg } from "@/components/motion/useIsLg";
 import { useFinePointer } from "@/components/motion/useFinePointer";
+import { useMediaQuery } from "@/components/motion/useMediaQuery";
 
-type IconType = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+type IconType = React.ComponentType<{
+  className?: string;
+  style?: React.CSSProperties;
+}>;
 
 // Logo + brand colour per skill (line icons for non-brand skills).
 const ICONS: Record<string, { icon: IconType; color: string }> = {
@@ -68,28 +88,44 @@ const ICONS: Record<string, { icon: IconType; color: string }> = {
   "HLS streaming": { icon: MonitorPlay, color: "#2563eb" },
 };
 
-const iconFor = (skill: string) => ICONS[skill] ?? { icon: Blocks, color: "#ff4d00" };
-const groupOf = (skill: string) => skills.find((g) => g.items.includes(skill))?.group ?? "";
+const iconFor = (skill: string) =>
+  ICONS[skill] ?? { icon: Blocks, color: "#ff4d00" };
+const groupOf = (skill: string) =>
+  skills.find((g) => g.items.includes(skill))?.group ?? "";
 const slug = (s: string) => s.replace(/\W+/g, "-");
 
 /** Tile in the grid. Its layoutId lets it morph into the popup card when clicked. */
-function SkillTile({ skill, onOpen }: { skill: string; onOpen: (skill: string, el: HTMLButtonElement) => void }) {
+function SkillTile({
+  skill,
+  onOpen,
+}: {
+  skill: string;
+  onOpen: (skill: string, el: HTMLButtonElement) => void;
+}) {
   const { icon: Icon, color } = iconFor(skill);
   return (
     <motion.button
       type="button"
       layoutId={`skill-${slug(skill)}`}
       onClick={(e) => onOpen(skill, e.currentTarget)}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 320, damping: 26 }}
       aria-haspopup="dialog"
-      className="group relative flex aspect-[4/3] flex-col items-start justify-between overflow-hidden rounded-xl border border-border bg-card p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="group relative flex min-h-14 items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
-      <Icon className="h-7 w-7 transition-transform duration-500 ease-out-expo group-hover:scale-110" style={{ color }} />
-      <span className="text-sm leading-tight font-medium">{skill}</span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background">
+        <Icon
+          className="h-5 w-5 transition-transform duration-500 ease-out-expo group-hover:scale-110"
+          style={{ color }}
+        />
+      </span>
+      <span className="min-w-0 flex-1 text-[13px] leading-tight font-medium">
+        {skill}
+      </span>
       <RefreshCw
         aria-hidden
-        className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground opacity-0 transition-[opacity,transform] duration-500 group-hover:rotate-180 group-hover:opacity-100"
+        className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-500 group-hover:rotate-180 sm:block"
       />
       {/* Brand-colour wash on hover */}
       <span
@@ -158,28 +194,33 @@ function SkillCard({ skill, onClose }: { skill: string; onClose: () => void }) {
           initial={{ rotateY: 0 }}
           animate={{ rotateY: 180 }}
           exit={{ rotateY: 0 }}
-          transition={reduce ? { duration: 0 } : { duration: 0.9, ease: EASE, delay: 0.35 }}
+          transition={
+            reduce
+              ? { duration: 0 }
+              : { duration: 0.9, ease: EASE, delay: 0.35 }
+          }
         >
           {/* Front face */}
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-5 rounded-2xl border border-border bg-card shadow-2xl [backface-visibility:hidden]"
-          >
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 rounded-2xl border border-border bg-card shadow-2xl [backface-visibility:hidden]">
             <Icon className="h-20 w-20" style={{ color }} />
-            <p className="font-display text-3xl font-medium tracking-[-0.03em]">{skill}</p>
+            <p className="font-display text-3xl font-medium tracking-[-0.03em]">
+              {skill}
+            </p>
             <span className="label">{groupOf(skill)}</span>
           </div>
 
           {/* Back face (pre-rotated so it reads correctly after the flip) */}
-          <div
-            className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-foreground text-background shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
-          >
+          <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-foreground text-background shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
             <div className="flex items-center justify-between gap-3 border-b border-background/10 px-6 py-4">
               <span className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
                   <Icon className="h-6 w-6" style={{ color }} />
                 </span>
                 <span>
-                  <span id="skill-card-title" className="block font-display text-xl font-medium tracking-[-0.02em]">
+                  <span
+                    id="skill-card-title"
+                    className="block font-display text-xl font-medium tracking-[-0.02em]"
+                  >
                     {skill}
                   </span>
                   <span className="block font-mono text-[10px] tracking-[0.14em] text-background/50 uppercase">
@@ -198,8 +239,15 @@ function SkillCard({ skill, onClose }: { skill: string; onClose: () => void }) {
               </button>
             </div>
 
-            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5" data-lenis-prevent>
-              {info && <p className="text-[15px] leading-relaxed text-background/85">{info.summary}</p>}
+            <div
+              className="flex-1 space-y-6 overflow-y-auto px-6 py-5"
+              data-lenis-prevent
+            >
+              {info && (
+                <p className="text-[15px] leading-relaxed text-background/85">
+                  {info.summary}
+                </p>
+              )}
 
               {info && (
                 <div>
@@ -208,7 +256,10 @@ function SkillCard({ skill, onClose }: { skill: string; onClose: () => void }) {
                   </p>
                   <ul className="space-y-2.5">
                     {info.points.map((pt) => (
-                      <li key={pt} className="flex gap-3 text-sm leading-relaxed">
+                      <li
+                        key={pt}
+                        className="flex gap-3 text-sm leading-relaxed"
+                      >
                         <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                         {pt}
                       </li>
@@ -260,19 +311,22 @@ const jitter = (n: number) => {
 };
 
 /**
- * Scatter positions (in % of the stage) for n items: a jittered grid of up to 7 columns with
- * alternate rows offset (honeycomb-ish); a short last row is centred. Kept 7–93% from the
- * edges so scaled-up items never spill out of the stage.
+ * Scatter positions (in % of the stage) for n items: a jittered grid of up to maxCols columns with
+ * alternate rows offset (honeycomb-ish); a short last row is centred. Kept clear of the
+ * edges (6–94% across, 7–93% down) so long labels never spill out of the stage.
  */
-function scatter(n: number) {
-  const cols = Math.min(7, Math.max(1, n));
+function scatter(n: number, maxCols = 7) {
+  const cols = Math.min(maxCols, Math.max(1, n));
   const rows = Math.ceil(n / cols);
   return Array.from({ length: n }, (_, i) => {
     const row = Math.floor(i / cols);
     const inRow = Math.min(cols, n - row * cols);
     const col = (i % cols) + (cols - inRow) / 2;
     const offset = row % 2 && rows > 1 ? 0.5 : 0;
-    const x = ((col + 0.5 + offset * 0.6) / (cols + 0.3)) * 100 + jitter(i + 1) * 1.8;
+    const x =
+      6 +
+      ((col + 0.5 + offset * 0.6) / (cols + 0.3)) * 88 +
+      jitter(i + 1) * 1.8;
     const y = 7 + ((row + 0.5) / rows) * 86 + jitter(i + 7) * (14 / rows);
     return { x, y };
   });
@@ -297,17 +351,21 @@ function SkillCloud({
   fullscreen: boolean;
   onToggleFullscreen: () => void;
 }) {
-  const all = skills.flatMap((g, gi) => g.items.map((skill) => ({ skill, gi })));
+  const all = skills.flatMap((g, gi) =>
+    g.items.map((skill) => ({ skill, gi })),
+  );
   const stageRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const measureRef = useRef<() => void>(() => {});
   const [focusGroup, setFocusGroup] = useState<number | null>(null);
   const [filter, setFilter] = useState<number | null>(null); // null = all groups
+  // Narrower screens get one column fewer so long labels keep their space.
+  const maxCols = useMediaQuery("(min-width: 1280px)") ? 7 : 6;
 
   // Positions for the visible skills only, so a filtered group spreads across the stage.
   const visible = all.map((s) => filter === null || s.gi === filter);
-  const shown = scatter(visible.filter(Boolean).length);
-  const full = scatter(all.length); // home spots, kept by filtered-out items
+  const shown = scatter(visible.filter(Boolean).length, maxCols);
+  const full = scatter(all.length, maxCols); // home spots, kept by filtered-out items
   let k = 0;
   const positions = all.map((_, i) => (visible[i] ? shown[k++] : null));
 
@@ -318,7 +376,8 @@ function SkillCloud({
 
     // Centres relative to the stage (the wrapper's left/top is the visual centre).
     let centres = items.map((el) => ({ x: el.offsetLeft, y: el.offsetTop }));
-    const measure = () => (centres = items.map((el) => ({ x: el.offsetLeft, y: el.offsetTop })));
+    const measure = () =>
+      (centres = items.map((el) => ({ x: el.offsetLeft, y: el.offsetTop })));
     measureRef.current = measure;
     window.addEventListener("resize", measure);
 
@@ -336,7 +395,11 @@ function SkillCloud({
       centres.forEach((c, i) => {
         if (items[i].dataset.hidden === "true") return; // filtered out
         // Exactly the demo's maths: linear falloff, clamped to 0–1.
-        const p = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0, RADIUS, 1, 0, Math.hypot(lx - c.x, ly - c.y)));
+        const p = gsap.utils.clamp(
+          0,
+          1,
+          gsap.utils.mapRange(0, RADIUS, 1, 0, Math.hypot(lx - c.x, ly - c.y)),
+        );
         const s = 1 + (MAX_SCALE - 1) * p;
         gsap.to(items[i], { scale: s, overwrite: true, ease: "power2.out" });
         items[i].style.zIndex = String(Math.round(s * 10));
@@ -348,7 +411,14 @@ function SkillCloud({
       if (!frame) frame = requestAnimationFrame(update);
     };
     const onLeave = () =>
-      items.forEach((el) => gsap.to(el, { scale: 1, duration: LEAVE_DURATION, overwrite: true, ease: "power2.out" }));
+      items.forEach((el) =>
+        gsap.to(el, {
+          scale: 1,
+          duration: LEAVE_DURATION,
+          overwrite: true,
+          ease: "power2.out",
+        }),
+      );
 
     stage.addEventListener("pointermove", onMove);
     stage.addEventListener("pointerleave", onLeave);
@@ -366,21 +436,35 @@ function SkillCloud({
   useEffect(() => {
     const t = setTimeout(() => measureRef.current(), 800);
     return () => clearTimeout(t);
-  }, [filter, fullscreen]);
+  }, [filter, fullscreen, maxCols]);
 
   const tab = (on: boolean) =>
     `flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 ${
-      on ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40"
+      on
+        ? "border-foreground bg-foreground text-background"
+        : "border-border bg-card hover:border-foreground/40"
     }`;
 
   return (
     <div className={fullscreen ? "flex min-h-0 flex-1 flex-col" : ""}>
       {/* Filter tabs: click to show one group; hover to spotlight it */}
       <div className="flex flex-wrap items-center gap-2">
-        <div role="tablist" aria-label="Filter skills by group" className="flex flex-wrap gap-2">
-          <button type="button" role="tab" aria-selected={filter === null} onClick={() => setFilter(null)} className={tab(filter === null)}>
+        <div
+          role="tablist"
+          aria-label="Filter skills by group"
+          className="flex flex-wrap gap-2"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === null}
+            onClick={() => setFilter(null)}
+            className={tab(filter === null)}
+          >
             All
-            <span className="font-mono text-[10px] opacity-60">{all.length}</span>
+            <span className="font-mono text-[10px] opacity-60">
+              {all.length}
+            </span>
           </button>
           {skills.map((g, gi) => (
             <button
@@ -395,9 +479,14 @@ function SkillCloud({
               onBlur={() => setFocusGroup(null)}
               className={tab(filter === gi)}
             >
-              <span className="h-2 w-2 rounded-full" style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }} />
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }}
+              />
               {g.group}
-              <span className="font-mono text-[10px] opacity-60">{g.items.length}</span>
+              <span className="font-mono text-[10px] opacity-60">
+                {g.items.length}
+              </span>
             </button>
           ))}
         </div>
@@ -437,11 +526,14 @@ function SkillCloud({
           {fullscreen ? (
             <>
               <Minimize className="h-3.5 w-3.5" /> Exit
-              <kbd className="rounded border border-current/30 px-1 font-mono text-[10px] opacity-70">Esc</kbd>
+              <kbd className="rounded border border-current/30 px-1 font-mono text-[10px] opacity-70">
+                Esc
+              </kbd>
             </>
           ) : (
             <>
-              <Maximize className="h-3.5 w-3.5 transition-transform duration-300 group-hover/fs:scale-110" /> Full screen
+              <Maximize className="h-3.5 w-3.5 transition-transform duration-300 group-hover/fs:scale-110" />{" "}
+              Full screen
             </>
           )}
         </button>
@@ -470,18 +562,33 @@ function SkillCloud({
                 rotate: `${Math.round(jitter(i + 3) * 4)}deg`,
               }}
               className={`group absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 rounded-xl p-2 outline-none transition-[left,top,opacity] duration-700 ease-out-expo will-change-transform focus-visible:ring-2 focus-visible:ring-accent ${
-                hidden ? "pointer-events-none opacity-0" : dim ? "opacity-20" : "opacity-100"
+                hidden
+                  ? "pointer-events-none opacity-0"
+                  : dim
+                    ? "opacity-20"
+                    : "opacity-100"
               }`}
             >
               <span className="relative">
-                <Icon className={fullscreen ? "h-10 w-10 drop-shadow-sm" : "h-8 w-8 drop-shadow-sm"} style={{ color }} />
+                <Icon
+                  className={
+                    fullscreen
+                      ? "h-10 w-10 drop-shadow-sm"
+                      : "h-8 w-8 drop-shadow-sm"
+                  }
+                  style={{ color }}
+                />
                 <span
                   aria-hidden
                   className="absolute -top-1 -right-1.5 h-1.5 w-1.5 rounded-full"
                   style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }}
                 />
               </span>
-              <span className={`font-medium whitespace-nowrap ${fullscreen ? "text-[12px]" : "text-[11px]"}`}>{skill}</span>
+              <span
+                className={`font-medium whitespace-nowrap ${fullscreen ? "text-[12px]" : "text-[11px]"}`}
+              >
+                {skill}
+              </span>
             </button>
           );
         })}
@@ -494,7 +601,11 @@ function SkillCloud({
  * Quick view: every skill grouped by category in plain cards — fast to scan, no hunting with
  * the cursor. Each row still opens the flip card.
  */
-function SkillList({ onOpen }: { onOpen: (skill: string, el: HTMLButtonElement) => void }) {
+function SkillList({
+  onOpen,
+}: {
+  onOpen: (skill: string, el: HTMLButtonElement) => void;
+}) {
   return (
     <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
       {skills.map((group, gi) => (
@@ -506,7 +617,10 @@ function SkillList({ onOpen }: { onOpen: (skill: string, el: HTMLButtonElement) 
           className="mb-4 break-inside-avoid rounded-2xl border border-border bg-card p-5"
         >
           <h3 className="flex items-center gap-2.5 text-[15px] font-semibold">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }} />
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }}
+            />
             {group.group}
             <span className="ml-auto rounded-full bg-background px-2 py-0.5 font-mono text-[11px] font-normal text-muted-foreground">
               {group.items.length}
@@ -527,7 +641,9 @@ function SkillList({ onOpen }: { onOpen: (skill: string, el: HTMLButtonElement) 
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background ring-1 ring-border transition-colors group-hover/row:bg-card">
                       <Icon className="h-4 w-4" style={{ color }} />
                     </span>
-                    <span className="flex-1 text-[14px] font-medium">{skill}</span>
+                    <span className="flex-1 text-[14px] font-medium">
+                      {skill}
+                    </span>
                     {used.length > 0 && (
                       <span className="hidden font-mono text-[10px] tracking-wide text-muted-foreground sm:inline">
                         {used.length} project{used.length > 1 ? "s" : ""}
@@ -553,9 +669,19 @@ const VIEWS: { id: View; label: string; Icon: typeof Sparkles }[] = [
 const VIEW_KEY = "skills-view";
 
 /** Segmented switch between the two views; the active pill slides between options. */
-function ViewSwitch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+function ViewSwitch({
+  view,
+  onChange,
+}: {
+  view: View;
+  onChange: (v: View) => void;
+}) {
   return (
-    <div role="radiogroup" aria-label="Skills view" className="inline-flex rounded-full border border-border bg-card p-1">
+    <div
+      role="radiogroup"
+      aria-label="Skills view"
+      className="inline-flex rounded-full border border-border bg-card p-1"
+    >
       {VIEWS.map(({ id, label, Icon }) => {
         const on = view === id;
         return (
@@ -566,7 +692,9 @@ function ViewSwitch({ view, onChange }: { view: View; onChange: (v: View) => voi
             aria-checked={on}
             onClick={() => onChange(id)}
             className={`relative flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-300 ${
-              on ? "text-background" : "text-muted-foreground hover:text-foreground"
+              on
+                ? "text-background"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {on && (
@@ -591,6 +719,7 @@ export default function TechStack() {
   const isLg = useIsLg();
   const fine = useFinePointer();
   const [view, setView] = useState<View>("interactive");
+  const [mobileFilter, setMobileFilter] = useState(-1); // touch layout: -1 = all groups
 
   // Full screen (browser Fullscreen API, so Esc exits just like a video). The flip card is
   // rendered inside the same element, so it still shows while in full screen.
@@ -601,7 +730,8 @@ export default function TechStack() {
   const [overlayFs, setOverlayFs] = useState(false);
   const fullscreen = nativeFs || overlayFs;
   useEffect(() => {
-    const sync = () => setNativeFs(document.fullscreenElement === fsRef.current);
+    const sync = () =>
+      setNativeFs(document.fullscreenElement === fsRef.current);
     document.addEventListener("fullscreenchange", sync);
     return () => document.removeEventListener("fullscreenchange", sync);
   }, []);
@@ -628,7 +758,8 @@ export default function TechStack() {
       return;
     }
     const el = fsRef.current;
-    if (el?.requestFullscreen) el.requestFullscreen().catch(() => setOverlayFs(true));
+    if (el?.requestFullscreen)
+      el.requestFullscreen().catch(() => setOverlayFs(true));
     else setOverlayFs(true);
   };
 
@@ -658,7 +789,11 @@ export default function TechStack() {
 
   return (
     <section id="skills" className="shell scroll-mt-20 pb-20 md:pb-28">
-      <SectionHeader index="04" title="Skills" intro="Tap any skill to flip its card and see where I've used it." />
+      <SectionHeader
+        index="04"
+        title="Skills"
+        intro="Tap any skill to flip its card and see where I've used it."
+      />
 
       <div
         ref={fsRef}
@@ -680,14 +815,14 @@ export default function TechStack() {
                 </span>
               </p>
             ) : (
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                {view === "interactive"
-                  ? "Move your cursor across the skills — or switch to a quick list."
-                  : "Every skill by category. Click any one for details."}
-              </p>
-              <ViewSwitch view={view} onChange={changeView} />
-            </div>
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  {view === "interactive"
+                    ? "Move your cursor across the skills — or switch to a quick list."
+                    : "Every skill by category. Click any one for details."}
+                </p>
+                <ViewSwitch view={view} onChange={changeView} />
+              </div>
             )}
             {view === "interactive" || fullscreen ? (
               <motion.div
@@ -697,39 +832,98 @@ export default function TechStack() {
                 transition={{ duration: 0.4 }}
                 className={fullscreen ? "flex min-h-0 flex-1 flex-col" : ""}
               >
-                <SkillCloud onOpen={onOpen} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} />
+                <SkillCloud
+                  onOpen={onOpen}
+                  fullscreen={fullscreen}
+                  onToggleFullscreen={toggleFullscreen}
+                />
               </motion.div>
             ) : (
               <SkillList key="quick" onOpen={onOpen} />
             )}
           </>
         ) : (
-          // Touch / smaller screens: grouped tile grid.
-          <div className="space-y-10">
-            {skills.map((group, gi) => (
-              <motion.div
-                key={group.group}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-                transition={{ duration: 0.6, ease: EASE, delay: gi * 0.05 }}
+          // Touch / smaller screens: filter chips (swipe sideways) + compact grouped tiles.
+          <div>
+            {/* Sticks under the menu while scrolling the skills; edge fade hints there are more chips */}
+            <div className="sticky top-[84px] z-20 -mx-5 mb-5 bg-background/95 py-2 sm:static sm:mx-0 sm:bg-transparent sm:py-0">
+              <div
+                role="tablist"
+                aria-label="Filter skills by group"
+                className="flex gap-2 overflow-x-auto px-5 pb-1 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:flex-wrap sm:px-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden"
               >
-                <h3 className="label mb-4 flex items-center gap-3 !text-foreground">
-                  <span className="text-accent">{String(gi + 1).padStart(2, "0")}</span>
-                  {group.group}
-                  <span className="h-px flex-1 bg-border" />
-                </h3>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {group.items.map((skill) => (
-                    <SkillTile key={skill} skill={skill} onOpen={onOpen} />
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                {[
+                  { group: "All", items: skills.flatMap((g) => g.items) },
+                  ...skills,
+                ].map((g, i) => {
+                  const gi = i - 1; // -1 = All
+                  const on = mobileFilter === gi;
+                  return (
+                    <button
+                      key={g.group}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setMobileFilter(gi)}
+                      className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
+                        on
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-card"
+                      }`}
+                    >
+                      {gi >= 0 && (
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{
+                            background: GROUP_COLORS[gi % GROUP_COLORS.length],
+                          }}
+                        />
+                      )}
+                      {g.group}
+                      <span className="font-mono text-[10px] opacity-60">
+                        {g.items.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              {skills.map((group, gi) =>
+                mobileFilter !== -1 && mobileFilter !== gi ? null : (
+                  <motion.div
+                    key={group.group}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.45,
+                      ease: EASE,
+                      delay: mobileFilter === -1 ? gi * 0.04 : 0,
+                    }}
+                  >
+                    <h3 className="label mb-3 flex items-center gap-3 !text-foreground">
+                      <span className="text-accent">
+                        {String(gi + 1).padStart(2, "0")}
+                      </span>
+                      {group.group}
+                      <span className="h-px flex-1 bg-border" />
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                      {group.items.map((skill) => (
+                        <SkillTile key={skill} skill={skill} onOpen={onOpen} />
+                      ))}
+                    </div>
+                  </motion.div>
+                ),
+              )}
+            </div>
           </div>
         )}
 
-        <AnimatePresence>{open && <SkillCard key={open} skill={open} onClose={onClose} />}</AnimatePresence>
+        <AnimatePresence>
+          {open && <SkillCard key={open} skill={open} onClose={onClose} />}
+        </AnimatePresence>
       </div>
     </section>
   );

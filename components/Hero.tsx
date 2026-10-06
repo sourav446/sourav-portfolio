@@ -9,12 +9,14 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { ArrowUpRight, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUpRight, MessageCircle, Sparkles } from "lucide-react";
+import CountUp from "@/components/motion/CountUp";
 import { EASE } from "@/components/motion/Reveal";
 import { openContact } from "@/components/Contact";
 import Magnetic from "@/components/motion/Magnetic";
 import FillButton from "@/components/motion/FillButton";
 import { useFinePointer } from "@/components/motion/useFinePointer";
+import { useMediaQuery } from "@/components/motion/useMediaQuery";
 
 // Transparent WebP (background already removed) — keep it WebP/PNG so the transparency survives.
 const PORTRAIT = "/Images/sourav-portrait.webp";
@@ -44,14 +46,18 @@ function AccentLine({ play }: { play: boolean }) {
   return (
     <p
       aria-label={ACCENT_WORDS.join(" ")}
-      className="mt-3 flex flex-wrap gap-x-[0.3em] font-serif text-[clamp(1.7rem,2.8vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[hsl(18_70%_62%)] italic"
+      className="mt-3 flex flex-wrap gap-x-[0.3em] md:justify-center desk:justify-start font-serif text-[clamp(1.7rem,2.8vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[hsl(18_70%_62%)] italic"
     >
       {ACCENT_WORDS.map((word, i) => (
         <motion.span
           key={word}
           aria-hidden
           initial={{ opacity: 0, y: "40%", scale: 1.08, filter: "blur(14px)" }}
-          animate={play ? { opacity: 1, y: "0%", scale: 1, filter: "blur(0px)" } : undefined}
+          animate={
+            play
+              ? { opacity: 1, y: "0%", scale: 1, filter: "blur(0px)" }
+              : undefined
+          }
           transition={{ duration: 1.2, ease: EASE, delay: 0.35 + i * 0.22 }}
           className="inline-block pb-[0.12em]"
         >
@@ -66,6 +72,37 @@ function AccentLine({ play }: { play: boolean }) {
  * Endless skills marquee under the buttons. The list is rendered twice so the
  * -50% loop is seamless; edges fade out and hovering pauses it.
  */
+// Phones only: résumé highlights that fill the first screen once the portrait is gone.
+const HIGHLIGHTS = [
+  { value: "1.7+", label: "Years building production apps" },
+  { value: "50+", label: "Reusable React components" },
+  { value: "1k+", label: "Learners on the LMS" },
+];
+
+function MobileHighlights({ play }: { play: boolean }) {
+  return (
+    <div className="mt-6 md:hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={play ? { opacity: 1, y: 0 } : undefined}
+        transition={{ duration: 0.8, ease: EASE, delay: 0.85 }}
+        className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl border border-border bg-card/70"
+      >
+        {HIGHLIGHTS.map((h) => (
+          <div key={h.label} className="px-3 py-3.5">
+            <p className="font-display text-[26px] leading-none font-medium tracking-[-0.04em] text-accent">
+              <CountUp value={h.value} duration={1.6} />
+            </p>
+            <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+              {h.label}
+            </p>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 function HeroSkills({ play }: { play: boolean }) {
   const row = (copy: number) =>
     HERO_SKILLS.map((skill) => (
@@ -98,6 +135,8 @@ function HeroSkills({ play }: { play: boolean }) {
 }
 
 export default function Hero() {
+  // The portrait shows from tablet width up; phones never download it.
+  const showPortrait = useMediaQuery("(min-width: 768px)");
   // Entrance plays once the page has hydrated.
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
@@ -105,11 +144,22 @@ export default function Hero() {
 
   // Scroll-linked motion as the hero leaves the viewport.
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 26, restDelta: 0.0005 });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const p = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 26,
+    restDelta: 0.0005,
+  });
   const line1X = useTransform(p, [0, 1], ["0%", "-10%"]);
   const line3X = useTransform(p, [0, 1], ["0%", "-16%"]);
   const textOpacity = useTransform(p, [0, 0.55], [1, 0]);
+  // Phone scroll cue: visible at the top of the page, gone after the first ~120px of scrolling.
+  const { scrollY } = useScroll();
+  const cueOpacity = useTransform(scrollY, [0, 120], [1, 0]);
+  const cuePointer = useTransform(scrollY, (y) => (y > 100 ? "none" : "auto"));
   const textY = useTransform(p, [0, 1], ["0%", "-18%"]);
   const portraitY = useTransform(p, [0, 1], ["0%", "-14%"]);
   const portraitScale = useTransform(p, [0, 1], [1, 1.12]);
@@ -152,21 +202,21 @@ export default function Hero() {
       ref={ref}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      // Phones: grows with content (photo sits below the text). Desktop: exactly one screen.
-      className="relative min-h-[100svh] overflow-hidden lg:h-[100svh] lg:min-h-[640px]"
+      // Exactly one screen on phones (copy only) and desktop; tablets stack copy over the portrait.
+      className="relative min-h-[100svh] overflow-hidden md:flex md:flex-col desk:block desk:h-[100svh] desk:min-h-[640px]"
     >
       {/* Peach glow behind the portrait */}
       <motion.div
         aria-hidden
         style={{ scale: glowScale, x: glowX, y: glowY }}
-        className="pointer-events-none absolute top-[10%] right-[-12%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,hsl(18_100%_76%/0.38)_0%,hsl(18_100%_84%/0.17)_40%,transparent_70%)] will-change-transform lg:right-[2%]"
+        className="pointer-events-none absolute top-[10%] right-[-12%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,hsl(18_100%_76%/0.38)_0%,hsl(18_100%_84%/0.17)_40%,transparent_70%)] will-change-transform desk:right-[2%]"
       />
 
-      {/* Copy — vertically centred on the left (top area on phones) */}
-      <div className="shell relative z-10 flex items-start pt-28 lg:h-full lg:items-center lg:pt-16">
+      {/* Copy — phones: top-down with stats + scroll cue filling the screen; tablet: top; desktop: centred-left */}
+      <div className="shell relative z-10 flex min-h-[100svh] flex-col pt-24 pb-4 md:min-h-0 md:pt-28 md:pb-0 desk:h-full desk:flex-row desk:items-center desk:pt-16">
         <motion.div
           style={{ opacity: textOpacity, y: textY }}
-          className="w-full max-w-xl lg:max-w-[48%]"
+          className="w-full max-w-xl md:mx-auto md:max-w-2xl md:text-center desk:mx-0 desk:max-w-[48%] desk:text-left"
         >
           <motion.span
             {...fade(0.1)}
@@ -176,8 +226,11 @@ export default function Hero() {
             Available for MERN stack roles
           </motion.span>
 
-          <h1 className="mt-5 font-display text-[clamp(2.4rem,4.6vw,4.4rem)] leading-[1.06] font-medium tracking-[-0.035em]">
-            <motion.span style={{ x: line1X }} className="block overflow-hidden pb-[0.08em]">
+          <h1 className="mt-5 text-balance font-display text-[clamp(2.4rem,4.6vw,4.4rem)] leading-[1.06] font-medium tracking-[-0.035em]">
+            <motion.span
+              style={{ x: line1X }}
+              className="block overflow-hidden pb-[0.08em]"
+            >
               <motion.span {...line(0.15)} className="block">
                 I Build Digital Products That Make an Impact.
               </motion.span>
@@ -190,15 +243,18 @@ export default function Hero() {
 
           <motion.p
             {...fade(0.5)}
-            className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]"
+            className="mt-6 max-w-xl text-base md:mx-auto desk:mx-0 leading-relaxed text-muted-foreground sm:text-[17px]"
           >
-            I&apos;m Sourav Gokul V, building responsive,
-            production-ready applications with MongoDB, Express, React and Node.js. From
-            e-commerce to real-time WebRTC platforms, I turn complex requirements into
-            seamless user experiences.
+            I&apos;m Sourav Gokul V, building responsive, production-ready
+            applications with MongoDB, Express, React and Node.js. From
+            e-commerce to real-time WebRTC platforms, I turn complex
+            requirements into seamless user experiences.
           </motion.p>
 
-          <motion.div {...fade(0.65)} className="mt-8 flex flex-wrap items-center gap-3">
+          <motion.div
+            {...fade(0.65)}
+            className="mt-8 flex flex-wrap items-center gap-3 md:justify-center desk:justify-start"
+          >
             <Magnetic>
               <FillButton
                 href="#projects"
@@ -221,14 +277,62 @@ export default function Hero() {
           </motion.div>
 
           <HeroSkills play={ready} />
+
+          <MobileHighlights play={ready} />
         </motion.div>
+
+        {/* Phones only: a rotating "scroll to explore" badge around a bobbing arrow. Pinned to the
+            bottom of the screen so it's always visible on load (browser bars can hide the hero's
+            bottom edge), then it fades away as soon as the visitor starts scrolling. */}
+        <motion.a
+          href="#projects"
+          aria-label="Scroll to projects"
+          style={{ opacity: cueOpacity, pointerEvents: cuePointer }}
+          className="fixed inset-x-0 bottom-4 z-40 mx-auto flex h-20 w-20 items-center justify-center md:hidden"
+        >
+          <motion.span
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={ready ? { opacity: 1, scale: 1 } : undefined}
+            transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
+            className="relative flex h-full w-full items-center justify-center rounded-full bg-background/85 shadow-[0_12px_30px_-14px_rgba(0,0,0,0.35)] ring-1 ring-border"
+          >
+            <svg
+              viewBox="0 0 100 100"
+              className="absolute inset-0 h-full w-full animate-[spin_14s_linear_infinite]"
+              aria-hidden
+            >
+              <defs>
+                <path
+                  id="scroll-cue-ring"
+                  d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"
+                />
+              </defs>
+              <text className="fill-foreground/65 font-mono text-[10px] tracking-[0.14em] uppercase">
+                <textPath
+                  href="#scroll-cue-ring"
+                  textLength="236"
+                  lengthAdjust="spacing"
+                >
+                  Scroll down · Explore my work ·
+                </textPath>
+              </text>
+            </svg>
+            <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background shadow-[0_10px_24px_-8px_rgba(0,0,0,0.5)]">
+              <ArrowDown className="h-4 w-4 animate-[scroll-cue-bob_1.6s_ease-in-out_infinite]" />
+            </span>
+            <span
+              aria-hidden
+              className="absolute inset-0 animate-ping rounded-full border border-accent/40 [animation-duration:2.4s]"
+            />
+          </motion.span>
+        </motion.a>
       </div>
 
       {/* Portrait — transparent photo used as-is, so the page and peach glow show around it */}
       <motion.div
         style={{ y: portraitY, scale: portraitScale, rotate: portraitRotate }}
-        // Phones: in the normal flow below the text so it never covers it. Desktop: bottom-right.
-        className="relative mt-4 aspect-[1402/1122] w-full origin-bottom sm:mx-auto sm:w-[80%] lg:absolute lg:right-[4vw] lg:bottom-0 lg:mx-0 lg:mt-0 lg:h-[calc(90%+20px)] lg:w-auto lg:max-w-[78%]"
+        // Tablets: below the copy, rising from the bottom. Desktop: bottom-right. Phones skip it.
+        className="hidden origin-bottom md:relative md:mx-auto md:mt-auto md:block md:aspect-[1402/1122] md:w-[70%] desk:absolute desk:right-[4vw] desk:bottom-0 desk:mx-0 desk:mt-0 desk:h-[calc(90%+20px)] desk:w-auto desk:max-w-[78%]"
       >
         <motion.div
           initial={{ opacity: 0, y: 80, scale: 0.96 }}
@@ -237,14 +341,17 @@ export default function Hero() {
           style={{ rotateX, rotateY, transformPerspective: 1400 }}
           className="relative h-full w-full [mask-image:linear-gradient(to_bottom,#000_78%,transparent_100%)]"
         >
-          <Image
-            src={PORTRAIT}
-            alt="Sourav Gokul V"
-            fill
-            priority
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            className="object-contain object-bottom"
-          />
+          {showPortrait && (
+            <Image
+              src={PORTRAIT}
+              alt="Sourav Gokul V"
+              fill
+              sizes="(min-width: 1024px) 60vw, 70vw"
+              loading="eager"
+              fetchPriority="high"
+              className="object-contain object-bottom"
+            />
+          )}
         </motion.div>
       </motion.div>
     </section>

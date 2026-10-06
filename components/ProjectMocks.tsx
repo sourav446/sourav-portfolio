@@ -60,7 +60,7 @@ export function LmsVisual() {
   const played = (sec / LESSON_LENGTH) * 100;
 
   return (
-    <div ref={ref} aria-hidden className={frame}>
+    <div ref={ref} aria-hidden className={`${frame} @container`}>
       {/* App bar */}
       <div className="flex items-center gap-2 border-b border-black/10 px-3 py-2">
         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#2563eb] text-white">
@@ -73,10 +73,10 @@ export function LmsVisual() {
         </span>
       </div>
 
-      <div className="grid flex-1 grid-cols-[1fr_36%] gap-2.5 p-2.5">
+      <div className="grid flex-1 grid-cols-1 gap-2.5 p-2.5 @md:grid-cols-[1fr_36%]">
         <div className="flex min-w-0 flex-col gap-2">
           {/* Player */}
-          <div className="relative min-h-[150px] flex-1 overflow-hidden rounded-md bg-[#0b1020]">
+          <div className="relative aspect-video overflow-hidden rounded-md bg-[#0b1020] @md:aspect-auto @md:min-h-[150px] @md:flex-1">
             {/* "Screen" in the video: an editor with code being typed */}
             <div className="absolute inset-0 p-2.5 pr-[30%] font-mono text-[7.5px] leading-[1.55]">
               <div className="mb-1.5 flex gap-1">
@@ -139,10 +139,10 @@ export function LmsVisual() {
               <div className="mt-1 flex items-center gap-2 text-white">
                 <Pause className="h-2.5 w-2.5" fill="currentColor" />
                 <Volume2 className="h-2.5 w-2.5" />
-                <span className="font-mono text-[7px] tabular-nums">
+                <span className="font-mono text-[7px] whitespace-nowrap tabular-nums">
                   {mmss(sec)} / {mmss(LESSON_LENGTH)}
                 </span>
-                <span className="ml-auto rounded bg-white/15 px-1 font-mono text-[6.5px]">HLS · 720p</span>
+                <span className="ml-auto rounded bg-white/15 px-1 font-mono text-[6.5px] whitespace-nowrap">HLS · 720p</span>
                 <Captions className="h-2.5 w-2.5" />
                 <Maximize className="h-2.5 w-2.5" />
               </div>
@@ -174,7 +174,9 @@ export function LmsVisual() {
             <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#10b981] text-white">
               <Check className="h-2.5 w-2.5" />
             </span>
-            Last quiz · <b>9 / 10</b> — progress saved
+            <span>
+              Last quiz · <b>9 / 10</b> — progress saved
+            </span>
           </motion.div>
         </div>
 
@@ -215,7 +217,7 @@ export function LmsVisual() {
             ))}
           </ol>
           {/* Lesson resources */}
-          <div className="mt-auto space-y-1 border-t border-black/10 p-2">
+          <div className="mt-auto hidden space-y-1 border-t border-black/10 p-2 @md:block">
             <p className="text-[7.5px] font-semibold tracking-wide text-black/45 uppercase">Resources</p>
             {["Lesson slides.pdf", "starter-code.zip"].map((f) => (
               <p key={f} className="flex items-center gap-1.5 rounded bg-black/[0.03] px-1.5 py-1 text-[7.5px]">

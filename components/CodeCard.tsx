@@ -79,7 +79,7 @@ export default function CodeCard({
       </div>
 
       {/* Code */}
-      <pre className="overflow-x-auto px-4 py-5 font-mono text-[12px] leading-[1.9] sm:text-[13px]">
+      <pre className="overflow-x-auto px-4 py-5 font-mono text-[10.5px] leading-[1.9] min-[400px]:text-[11.5px] sm:text-[13px]">
         <code>
           {LINES.map((line, li) => {
             const visible: React.ReactNode[] = [];

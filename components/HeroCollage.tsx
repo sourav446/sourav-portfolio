@@ -133,7 +133,7 @@ export default function HeroCollage({
   const go = (d: number) => setState(([i]) => [(i + d + n) % n, d]);
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col lg:block">
       <div aria-hidden className="relative h-[420px] sm:h-[520px] lg:h-[560px]">
         {SLOTS.map((s, si) => (
           <Slot
@@ -154,7 +154,8 @@ export default function HeroCollage({
         initial={{ opacity: 0, y: 10 }}
         animate={play ? { opacity: 1, y: 0 } : undefined}
         transition={{ duration: 0.8, ease: EASE, delay: 0.9 }}
-        className="absolute top-0 left-0 z-20 flex items-center gap-2"
+        // Phones: below the collage and code card. Desktop: top-left over the collage.
+        className="order-last mt-6 flex flex-wrap items-center gap-2 lg:absolute lg:top-0 lg:left-0 lg:z-20 lg:mt-0"
       >
         {[
           { d: -1, label: "Previous photos", Icon: ArrowLeft },

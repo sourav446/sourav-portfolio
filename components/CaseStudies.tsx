@@ -64,14 +64,17 @@ export default function CaseStudies() {
                       Case {n}
                     </span>
                     <span className={`h-px w-8 border-t ${t.rule}`} />
-                    <span className={`font-mono text-[11px] tracking-[0.14em] uppercase ${t.muted}`}>
+                    <span className={`hidden font-mono text-[11px] tracking-[0.14em] uppercase sm:inline ${t.muted}`}>
                       {cs.project}
                     </span>
                   </span>
-                  <span className={`font-mono text-[11px] tracking-[0.14em] ${t.muted}`}>
+                  <span className={`shrink-0 font-mono text-[11px] tracking-[0.14em] whitespace-nowrap ${t.muted}`}>
                     {n} / {String(caseStudies.length).padStart(2, "0")}
                   </span>
                 </div>
+                <p className={`relative mt-2 font-mono text-[11px] tracking-[0.14em] uppercase sm:hidden ${t.muted}`}>
+                  {cs.project}
+                </p>
 
                 {/* Title */}
                 <h3 className="relative mt-6 max-w-4xl font-display text-[clamp(2.2rem,4.6vw,4.6rem)] leading-[1.02] font-medium tracking-[-0.04em]">
@@ -79,9 +82,9 @@ export default function CaseStudies() {
                 </h3>
 
                 {/* Body */}
-                <div className="relative mt-auto grid gap-10 pt-10 lg:grid-cols-12 lg:gap-12">
+                <div className="relative mt-auto grid gap-10 pt-10 md:grid-cols-12 md:gap-8 lg:gap-12">
                   {/* Highlight panel */}
-                  <div className="lg:col-span-5">
+                  <div className="md:col-span-5">
                     <div className={`rounded-2xl p-6 md:p-8 ${t.resultBox}`}>
                       <p className="font-display text-5xl leading-none font-medium tracking-[-0.04em] text-accent md:text-6xl">
                         <CountUp value={cs.result.value} duration={1.6} />
@@ -92,7 +95,7 @@ export default function CaseStudies() {
                   </div>
 
                   {/* Approach */}
-                  <div className="lg:col-span-7">
+                  <div className="md:col-span-7">
                     <p className={`mb-3 font-mono text-[11px] tracking-[0.14em] uppercase ${t.muted}`}>Approach</p>
                     <ol className="space-y-3">
                       {cs.approach.map((step, k) => (

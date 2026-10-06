@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { projects, type Project } from "@/lib/content";
 import { EASE, SectionHeader } from "@/components/motion/Reveal";
 import CountUp from "@/components/motion/CountUp";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Plus } from "lucide-react";
 import LiveClassVisual from "@/components/LiveClassVisual";
 import StoreVisual from "@/components/StoreVisual";
 import { LmsVisual, PmtVisual } from "@/components/ProjectMocks";
 import { useSpotlight } from "@/components/motion/useSpotlight";
-import { useIsLg } from "@/components/motion/useIsLg";
+import { useMediaQuery } from "@/components/motion/useMediaQuery";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -245,36 +245,247 @@ function HorizontalGallery({ items }: { items: Project[] }) {
   );
 }
 
-export default function Work() {
-  const isLg = useIsLg();
+// Tinted backdrop behind each demo in the carousel.
+const TINTS = ["#fbe6da", "#e7ebf6", "#e6eefb", "#ece8e1"];
+
+/** Carousel card: demo on top, the essentials below, highlights folded into a toggle. */
+function CarouselCard({ p, i }: { p: Project; i: number }) {
+  const [more, setMore] = useState(false);
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_30px_60px_-40px_rgba(0,0,0,0.35)]">
+      <div className="p-3" style={{ background: TINTS[i % TINTS.length] }}>
+        <Visual p={p} />
+      </div>
+
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          {p.featured && (
+            <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] text-accent-foreground uppercase">
+              Featured
+            </span>
+          )}
+          <span className="label">{p.domain}</span>
+        </div>
+        <h3 className="mt-3 font-display text-[26px] leading-[1.08] font-medium tracking-[-0.03em]">{p.title}</h3>
+        <p className="mt-2 line-clamp-3 text-[15px] leading-relaxed text-muted-foreground">{p.summary}</p>
+
+        <p className="mt-4 mb-4 flex items-baseline gap-2">
+          <span className="font-display text-3xl font-medium tracking-[-0.04em] text-accent">
+            <CountUp value={p.stat.value} />
+          </span>
+          <span className="text-sm text-muted-foreground">{p.stat.label}</span>
+        </p>
+
+        {/* Highlights + stack: folded by default so a whole card fits on a phone screen */}
+        <button
+          type="button"
+          onClick={() => setMore((v) => !v)}
+          aria-expanded={more}
+          className="mt-auto flex cursor-pointer items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-left text-[14px] font-medium"
+        >
+          Key features &amp; stack
+          <span className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+            {p.highlights.length}
+            <Plus className={`h-4 w-4 text-foreground transition-transform duration-300 ${more ? "rotate-45" : ""}`} />
+          </span>
+        </button>
+        <AnimatePresence initial={false}>
+          {more && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              className="overflow-hidden"
+            >
+              <ul className="space-y-2 pt-3 text-[14px] leading-snug">
+                {p.highlights.map((h) => (
+                  <li key={h} className="flex gap-3">
+                    <span className="mt-[0.6em] h-px w-3 shrink-0 bg-accent" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+              <ul className="flex flex-wrap pt-3 gap-1.5" aria-label="Tech used">
+                {p.tech.map((t) => (
+                  <li key={t} className="rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[11px]">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {p.url && (
+          <a
+            href={p.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent"
+          >
+            Visit live site <ArrowUpRight className="h-4 w-4" />
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+/**
+ * Phones, tablets and small laptops: a swipe carousel. Native scroll-snap does the physics
+ * (so it feels right on touch); on every scroll frame each card is scaled, dimmed and tilted
+ * by its distance from the centre — cards around the focused one recede in 3D.
+ */
+function ProjectCarousel({ items }: { items: Project[] }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [active, setActive] = useState(0);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const mid = track.scrollLeft + track.clientWidth / 2;
+      let best = 0;
+      let bestDist = Infinity;
+      cardRefs.current.forEach((card, i) => {
+        if (!card) return;
+        const centre = card.offsetLeft + card.offsetWidth / 2;
+        const d = (centre - mid) / card.offsetWidth; // -1 … 1 for the neighbours
+        if (Math.abs(d) < bestDist) {
+          bestDist = Math.abs(d);
+          best = i;
+        }
+        if (reduce) return;
+        const a = Math.min(Math.abs(d), 1);
+        const inner = card.firstElementChild as HTMLElement;
+        inner.style.transform = `perspective(1200px) rotateY(${(-d * 10).toFixed(2)}deg) scale(${(1 - a * 0.08).toFixed(3)})`;
+        inner.style.opacity = String(1 - a * 0.45);
+      });
+      setActive(best);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    track.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      track.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [reduce]);
+
+  const go = (i: number) => {
+    const track = trackRef.current;
+    const card = cardRefs.current[Math.max(0, Math.min(items.length - 1, i))];
+    if (!track || !card) return;
+    track.scrollTo({
+      left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
+      behavior: reduce ? "auto" : "smooth",
+    });
+  };
 
   return (
-    <section id="projects" className="scroll-mt-20 pt-20 pb-20 md:pt-28 md:pb-28">
+    <div className="mt-10" role="region" aria-roledescription="carousel" aria-label="Projects">
+      <div
+        ref={trackRef}
+        data-lenis-prevent-wheel
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") go(active + 1);
+          if (e.key === "ArrowLeft") go(active - 1);
+        }}
+        tabIndex={0}
+        className="flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-[7vw] pb-6 outline-none [scrollbar-width:none] sm:px-[14vw] lg:px-[calc(50vw-320px)] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((p, i) => (
+          <div
+            key={p.title}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${items.length}: ${p.title}`}
+            className="w-[86vw] shrink-0 snap-center sm:w-[72vw] lg:w-[640px]"
+          >
+            <div className="h-full origin-center transition-[transform,opacity] duration-150 ease-out will-change-transform">
+              <CarouselCard p={p} i={i} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Controls: arrows, animated dots, counter */}
+      <div className="shell mt-2 flex items-center justify-between gap-4">
+        <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground">
+          <span className="text-foreground">{String(active + 1).padStart(2, "0")}</span> / {String(items.length).padStart(2, "0")}
+          <span className="ml-3 hidden text-foreground sm:inline">{items[active].short}</span>
+        </span>
+
+        <div className="flex items-center gap-1.5" aria-hidden>
+          {items.map((p, i) => (
+            <button
+              key={p.title}
+              type="button"
+              tabIndex={-1}
+              onClick={() => go(i)}
+              className={`h-1.5 cursor-pointer rounded-full transition-all duration-500 ease-out-expo ${
+                i === active ? "w-6 bg-accent" : "w-1.5 bg-foreground/20"
+              }`}
+            />
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          {[
+            { d: -1, label: "Previous project", Icon: ArrowLeft },
+            { d: 1, label: "Next project", Icon: ArrowRight },
+          ].map(({ d, label, Icon }) => {
+            const disabled = d < 0 ? active === 0 : active === items.length - 1;
+            return (
+              <button
+                key={d}
+                type="button"
+                onClick={() => go(active + d)}
+                disabled={disabled}
+                aria-label={label}
+                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-card transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background disabled:cursor-default disabled:opacity-35 disabled:hover:border-border disabled:hover:bg-card disabled:hover:text-foreground"
+              >
+                <Icon className="h-4 w-4" />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Work() {
+  // The sideways gallery needs room for a full card: wide and tall enough. Otherwise a vertical list.
+  const isLg = useMediaQuery("(min-width: 1280px) and (min-height: 700px)");
+
+  return (
+    <section id="projects" className="scroll-mt-20 pt-12 pb-16 md:pt-28 md:pb-28">
       <div className="shell">
         <SectionHeader
           index="02"
           title="Projects"
-          intro="Three production platforms I build and maintain at Aim Window Info Tech, plus an enterprise project management tool."
+          intro="Live products used every day — real-time classrooms, online learning, e-commerce and team workflows, built end to end."
         />
       </div>
 
       {isLg ? (
         <HorizontalGallery items={projects} />
       ) : (
-        // Phones / small tablets: a simple vertical list with a fade-up.
-        <div className="shell mt-10 space-y-5">
-          {projects.map((p, i) => (
-            <motion.div
-              key={p.title}
-              initial={{ opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-              transition={{ duration: 0.7, ease: EASE }}
-            >
-              <ProjectCard p={p} i={i} total={projects.length} />
-            </motion.div>
-          ))}
-        </div>
+        // Phones, tablets and small laptops: swipe carousel.
+        <ProjectCarousel items={projects} />
       )}
     </section>
   );
