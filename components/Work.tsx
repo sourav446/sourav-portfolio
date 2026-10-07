@@ -111,6 +111,7 @@ function ProjectCard({ p, i, total }: { p: Project; i: number; total: number }) 
         </div>
         <h3 className="mt-4 font-display text-3xl font-medium tracking-[-0.03em] md:text-4xl">{p.title}</h3>
         <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{p.summary}</p>
+        <ProjectRole role={p.role} />
         {p.url && (
           <a
             href={p.url}
@@ -268,6 +269,7 @@ function CarouselCard({ p, i }: { p: Project; i: number }) {
         </div>
         <h3 className="mt-3 font-display text-[26px] leading-[1.08] font-medium tracking-[-0.03em]">{p.title}</h3>
         <p className="mt-2 line-clamp-3 text-[15px] leading-relaxed text-muted-foreground">{p.summary}</p>
+        <ProjectRole role={p.role} />
 
         <p className="mt-4 mb-4 flex items-baseline gap-2">
           <span className="font-display text-3xl font-medium tracking-[-0.04em] text-accent">
@@ -488,5 +490,21 @@ export default function Work() {
         <ProjectCarousel items={projects} />
       )}
     </section>
+  );
+}
+
+/** "My role" line: what I personally owned, so the card says more than what the product does. */
+function ProjectRole({ role }: { role: string }) {
+  const [who, what] = role.split(" — ");
+  return (
+    <p className="mt-3 flex items-start gap-2 text-[13px] leading-snug">
+      <span className="mt-px shrink-0 rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-[0.08em] text-accent uppercase">
+        My role
+      </span>
+      <span>
+        <span className="font-medium text-foreground">{who}</span>
+        {what && <span className="text-muted-foreground"> — {what}</span>}
+      </span>
+    </p>
   );
 }

@@ -9,6 +9,7 @@ import { EASE } from "@/components/motion/Reveal";
 import Magnetic from "@/components/motion/Magnetic";
 import FillButton from "@/components/motion/FillButton";
 import { openContact } from "@/components/Contact";
+import { resumeClick } from "@/components/ResumeModal";
 
 const SOCIALS = [
   { label: "LinkedIn", href: profile.linkedin, external: true },
@@ -29,7 +30,9 @@ function RollLink({ href, children, external }: { href: string; children: string
               e.stopPropagation();
               openContact();
             }
-          : undefined
+          : href === profile.resume
+            ? resumeClick
+            : undefined
       }
       {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
       className="group/roll inline-flex items-center gap-2 py-[min(0.25rem,0.4svh)]"
@@ -97,6 +100,7 @@ function LinkRow({ href, label, external }: { href: string; label: string; exter
     <li>
       <a
         href={href}
+        onClick={href === profile.resume ? resumeClick : undefined}
         {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
         className="flex items-center justify-between py-2.5 text-[15px] transition-colors active:text-accent"
       >

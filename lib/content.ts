@@ -104,6 +104,8 @@ export type Project = {
   /** Headline figure shown on the card. */
   stat: { value: string; label: string };
   summary: string;
+  /** What I personally owned on the project. */
+  role: string;
   highlights: string[];
   tech: string[];
 };
@@ -119,6 +121,7 @@ export const projects: Project[] = [
     stat: { value: "250+", label: "concurrent participants per room" },
     summary:
       "Browser-based live classes on a LiveKit WebRTC SFU — video, screen share, chat and recording, integrated with the MGR ERP.",
+    role: "Frontend owner — room UI, media controls and chat, plus the Node.js services for joins and capacity",
     highlights: [
       "LiveKit SFU media pipeline with STUN/TURN traversal for restrictive networks",
       "Load-tested at 1,000 simulated participants with LiveKit's load-testing and end-to-end media tools",
@@ -138,6 +141,7 @@ export const projects: Project[] = [
     stat: { value: "10 → 80", label: "Lighthouse score after SSR" },
     summary:
       "Customer-facing sports-gear storefront with 10k+ product listings — from product discovery to CCAvenue checkout.",
+    role: "Frontend owner — SSR product pages, search, cart and CCAvenue checkout",
     highlights: [
       "SSR product pages — Lighthouse 10 → 80 and 50% faster initial load",
       "Product search with category and brand browsing (SS, SG, MRF, COSCO, Yonex…)",
@@ -155,6 +159,7 @@ export const projects: Project[] = [
     stat: { value: "1k+", label: "learners across 15+ courses" },
     summary:
       "Role-based learning platform for admins, instructors and students — courses, lessons, enrolment, video and quizzes.",
+    role: "Frontend owner — role-based dashboards, course flows, HLS player and quizzes",
     highlights: [
       "Role-based interfaces (RBAC) for admin, instructor and student",
       "Course, lesson and enrolment management",
@@ -171,6 +176,7 @@ export const projects: Project[] = [
     domain: "Productivity",
     stat: { value: "Real-time", label: "team collaboration" },
     summary: "Sprint planning, task tracking and live collaboration for teams.",
+    role: "Frontend developer — task boards, live updates and approval workflows",
     highlights: [
       "Drag-and-drop task boards",
       "Live updates with Socket.IO",
@@ -248,7 +254,11 @@ export const skills = [
   },
   {
     group: "Tools & practices",
-    items: ["Git & GitHub", "Reusable components", "Agile", "Performance optimization", "Postman", "VS Code", "Docker"],
+    items: ["Git & GitHub", "Reusable components", "Agile", "Performance optimization", "Postman", "VS Code"],
+  },
+  {
+    group: "Cloud & testing",
+    items: ["AWS", "Hostinger", "Docker", "Load testing"],
   },
   {
     group: "AI",
@@ -483,6 +493,30 @@ export const skillInfo: Record<string, { summary: string; points: string[] }> = 
       "Running apps and services in containers that match across machines",
       "Writing Dockerfiles and composing multi-service setups",
       "Spinning up databases and caches locally without manual installs",
+    ],
+  },
+  AWS: {
+    summary: "Cloud infrastructure for deploying and running production services.",
+    points: [
+      "Deploying and hosting application services in the cloud",
+      "Managing environment configuration for staging and production",
+      "Keeping deployments reliable as traffic grows",
+    ],
+  },
+  Hostinger: {
+    summary: "Hosting and domains for shipping web projects live.",
+    points: [
+      "Deploying and hosting websites and web apps",
+      "Domain, DNS and SSL setup for live sites",
+      "Taking projects from local build to a public URL",
+    ],
+  },
+  "Load testing": {
+    summary: "Proving the real-time platform holds up before real users arrive.",
+    points: [
+      "Load-tested the live classroom at 1,000 simulated participants",
+      "Used LiveKit's load-testing and end-to-end media tools",
+      "Checked capacity limits under class-start join storms",
     ],
   },
   "AI development": {

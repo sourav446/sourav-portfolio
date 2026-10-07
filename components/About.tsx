@@ -36,9 +36,9 @@ export default function About() {
     >
       <SectionHeader index="06" title="About" />
 
-      <div className="grid-12 mt-10 items-center gap-y-16 md:mt-14">
-        {/* Workspace collage + code card */}
-        <div ref={collageRef} className="col-span-4 md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-1">
+      <div className="grid-12 mt-8 items-center gap-y-16 md:mt-14">
+        {/* Workspace collage + code card (tablet and up; phones go straight to the bio) */}
+        <div ref={collageRef} className="hidden md:col-span-10 md:block md:col-start-2 lg:col-span-6 lg:col-start-1">
           <HeroCollage play={inView} mx={mx} my={my} rotateX={rotateX} rotateY={rotateY} />
         </div>
 

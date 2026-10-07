@@ -7,8 +7,8 @@ import TechStack from "@/components/TechStack";
 import Experience from "@/components/Experience";
 import About from "@/components/About";
 import ContactDialog from "@/components/Contact";
+import ResumeModal from "@/components/ResumeModal";
 import Footer from "@/components/Footer";
-import PageChrome from "@/components/motion/PageChrome";
 
 export default function Page() {
   return (
@@ -19,7 +19,6 @@ export default function Page() {
       >
         Skip to content
       </a>
-      <PageChrome />
       <Navigation />
       <main>
         {/* 01 */}
@@ -37,6 +36,7 @@ export default function Page() {
       </main>
       <Footer />
       <ContactDialog />
+      <ResumeModal />
     </Providers>
   );
 }

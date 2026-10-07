@@ -2,7 +2,8 @@
 
 import { FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Check, Copy, FileText, Loader2, Mail, X } from "lucide-react";
+import { ArrowUpRight, Check, Copy, FileText, Github, Linkedin, Loader2, Mail, MapPin, X } from "lucide-react";
+import { resumeClick } from "@/components/ResumeModal";
 import { profile } from "@/lib/content";
 import { useContactMutation } from "@/hooks/useContactQuery";
 import { EASE } from "@/components/motion/Reveal";
@@ -44,6 +45,39 @@ function Field({
 }
 
 /** Email address that copies itself on click, with a small "Copied" toast. */
+/** Phones: email card in the details grid — tap to copy. */
+function MobileEmailCard() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(profile.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      window.location.href = `mailto:${profile.email}`;
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={copied ? "Email address copied" : `Copy email address ${profile.email}`}
+      className="flex min-w-0 cursor-pointer flex-col rounded-2xl border border-border bg-card px-3.5 py-3 text-left active:bg-background"
+    >
+      <span className="flex items-center justify-between">
+        <span className="font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+          {copied ? "Copied" : "Email"}
+        </span>
+        {copied ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+      </span>
+      <span className="mt-2 flex items-center gap-1.5 truncate text-[13px] font-medium">
+        <Mail className="h-3.5 w-3.5 shrink-0 text-accent" />
+        <span className="truncate">{profile.email}</span>
+      </span>
+    </button>
+  );
+}
+
 function CopyEmail({ email }: { email: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -223,19 +257,19 @@ function ContactBody() {
 
   return (
     <>
-      <div className="grid-12 mt-8 gap-y-12 md:mt-10">
-        <div className="col-span-4 flex flex-col gap-8 md:col-span-5">
+      <div className="grid-12 mt-4 gap-y-6 md:mt-10 md:gap-y-12">
+        <div className="col-span-4 flex flex-col gap-5 md:col-span-5 md:gap-8">
           <div>
-            <h2 id="contact-title" className="font-display text-5xl font-medium tracking-[-0.04em] md:text-7xl">
+            <h2 id="contact-title" className="font-display text-[42px] leading-none font-medium tracking-[-0.04em] md:text-7xl">
               Let&apos;s talk<span className="text-accent">.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
+            <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-muted-foreground md:mt-4 md:text-base">
               Open to Frontend and MERN stack developer roles. Email me
               directly, or use the form to send a message.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="hidden flex-wrap gap-3 md:flex">
             <Magnetic>
               <FillButton
                 href={`mailto:${profile.email}`}
@@ -247,8 +281,7 @@ function ContactBody() {
             <Magnetic>
               <a
                 href={profile.resume}
-                target="_blank"
-                rel="noreferrer"
+                onClick={resumeClick}
                 className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground px-6 text-sm font-medium transition-colors duration-300 hover:bg-foreground hover:text-background"
               >
                 <FileText className="h-4 w-4" /> Résumé
@@ -256,7 +289,40 @@ function ContactBody() {
             </Magnetic>
           </div>
 
-          <dl className="text-sm">
+          {/* Phones: personal details as a 2×2 grid */}
+          <div className="grid grid-cols-2 gap-2.5 md:hidden">
+            <MobileEmailCard />
+            {[
+              { k: "LinkedIn", v: "souravgokul11", href: profile.linkedin, Icon: Linkedin },
+              { k: "GitHub", v: "sourav446", href: profile.github, Icon: Github },
+              { k: "Location", v: "Bengaluru, IN", Icon: MapPin },
+            ].map(({ k, v, href, Icon }) => {
+              const body = (
+                <>
+                  <span className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{k}</span>
+                    {href ? <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" /> : <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
+                  </span>
+                  <span className="mt-2 flex items-center gap-1.5 truncate text-[13px] font-medium">
+                    {href && <Icon className="h-3.5 w-3.5 shrink-0 text-accent" />}
+                    {v}
+                  </span>
+                </>
+              );
+              const cls = "flex min-w-0 flex-col rounded-2xl border border-border bg-card px-3.5 py-3";
+              return href ? (
+                <a key={k} href={href} target="_blank" rel="noreferrer" className={`${cls} active:bg-background`}>
+                  {body}
+                </a>
+              ) : (
+                <div key={k} className={cls}>
+                  {body}
+                </div>
+              );
+            })}
+          </div>
+
+          <dl className="hidden text-sm md:block">
             <div className="flex items-center justify-between gap-4 border-t border-border py-3">
               <dt className="label pt-0.5">Email</dt>
               <dd>
@@ -292,7 +358,7 @@ function ContactBody() {
 
         <div
           {...formSpot.handlers}
-          className="group relative col-span-4 rounded-md border border-border bg-card p-6 md:col-span-7 md:col-start-6 md:p-8 [&>*:not(.spotlight-surface):not(.spotlight-border)]:relative"
+          className="group relative col-span-4 rounded-2xl border border-border bg-card p-5 md:col-span-7 md:rounded-md md:col-start-6 md:p-8 [&>*:not(.spotlight-surface):not(.spotlight-border)]:relative"
         >
           <span aria-hidden className="spotlight-surface" />
           <span aria-hidden className="spotlight-border" />
@@ -334,7 +400,7 @@ function ContactBody() {
                 transition={{ duration: 0.6, ease: EASE }}
                 onSubmit={handleSubmit}
                 aria-busy={mutation.isPending}
-                className="space-y-10"
+                className="space-y-7 md:space-y-10"
               >
                 {/* Honeypot: hidden from people and screen readers; bots fill it and get dropped. */}
                 <input
@@ -347,7 +413,7 @@ function ContactBody() {
                   onChange={set("company")}
                   className="absolute -left-[9999px] h-0 w-0 opacity-0"
                 />
-                <div className="grid gap-10 sm:grid-cols-2">
+                <div className="grid gap-7 sm:grid-cols-2 md:gap-10">
                   <Field
                     index="01"
                     label="Your name"

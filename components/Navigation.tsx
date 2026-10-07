@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
+import { ArrowUpRight, FileText, Github, Linkedin, Mail } from "lucide-react";
+import { resumeClick } from "@/components/ResumeModal";
 import { navLinks, profile } from "@/lib/content";
 import { EASE } from "@/components/motion/Reveal";
 import Magnetic from "@/components/motion/Magnetic";
@@ -44,7 +46,25 @@ function contactClick(e: React.MouseEvent, href: string, after?: () => void) {
 export default function Navigation() {
   const [open, setOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
-  const { scrollY } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
+  // Logo ring: fills with page progress, smoothed so it glides rather than ticks.
+  const ring = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 });
+
+  // Logo coin: desktop flips on hover; touch screens flip once on their own after load.
+  const [coinFlipped, setCoinFlipped] = useState(false);
+  useEffect(() => {
+    if (!window.matchMedia("(hover: none)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let back: ReturnType<typeof setTimeout>;
+    const flip = setTimeout(() => {
+      setCoinFlipped(true);
+      back = setTimeout(() => setCoinFlipped(false), 2600);
+    }, 1800);
+    return () => {
+      clearTimeout(flip);
+      clearTimeout(back);
+    };
+  }, []);
   // "top" is observed too, so scrolling back into the hero clears the highlight.
   const active = useActiveSection(["top", ...navLinks.map((l) => l.href.slice(1))]);
 
@@ -73,16 +93,45 @@ export default function Navigation() {
           <a
             href="#top"
             aria-label={`${profile.name} — back to top`}
-            className={`pointer-events-auto flex h-11 items-center gap-2 rounded-full pr-4 pl-1 transition-colors duration-500 ${
+            className={`group/logo pointer-events-auto flex h-11 items-center gap-2 rounded-full pr-4 pl-1 transition-colors duration-500 ${
               open ? "text-background" : glass
             }`}
           >
-            <span
-              className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-semibold tracking-tight transition-colors duration-500 ${
-                open ? "bg-background text-foreground" : "bg-foreground text-background"
-              }`}
-            >
-              SG
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+              {/* Scroll-progress ring around the initials */}
+              <svg aria-hidden viewBox="0 0 44 44" className="pointer-events-none absolute -inset-[4px] h-[44px] w-[44px] -rotate-90">
+                <circle cx="22" cy="22" r="20.5" fill="none" strokeWidth="1.5" className="stroke-foreground/10" />
+                <motion.circle
+                  cx="22"
+                  cy="22"
+                  r="20.5"
+                  fill="none"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="stroke-accent"
+                  style={{ pathLength: ring }}
+                />
+              </svg>
+              {/* Coin: "SG" on the front, my face on the back */}
+              <span className="relative h-9 w-9 [perspective:500px]">
+                <span
+                  className={`relative block h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.34,1.4,0.5,1)] [transform-style:preserve-3d] motion-safe:group-hover/logo:[transform:rotateY(180deg)] ${
+                    coinFlipped ? "[transform:rotateY(180deg)]" : ""
+                  }`}
+                >
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center rounded-full font-display text-sm font-semibold tracking-tight transition-colors duration-500 [backface-visibility:hidden] ${
+                      open ? "bg-background text-foreground" : "bg-foreground text-background"
+                    }`}
+                  >
+                    SG
+                  </span>
+                  <span className="absolute inset-0 overflow-hidden rounded-full bg-[#fbe6da] [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/Images/sourav-avatar.webp" alt="" width={36} height={36} className="h-full w-full object-cover" />
+                  </span>
+                </span>
+              </span>
             </span>
             <span className="relative overflow-hidden font-display text-[15px] font-medium tracking-tight whitespace-nowrap">
               <AnimatePresence mode="wait" initial={false}>
@@ -148,12 +197,11 @@ export default function Navigation() {
             <Magnetic strength={0.3}>
               <FillButton
                 href={profile.resume}
-                target="_blank"
-                rel="noreferrer"
+                onClick={resumeClick}
                 fillClass="bg-foreground"
                 className="h-11 bg-accent px-5 text-[13px] font-medium text-accent-foreground"
               >
-                Résumé ↗
+                Résumé
               </FillButton>
             </Magnetic>
           </div>
@@ -182,9 +230,9 @@ export default function Navigation() {
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}
             transition={{ duration: 0.7, ease: EASE }}
-            className="fixed inset-0 z-40 flex flex-col bg-foreground px-5 pt-28 pb-8 text-background sm:px-8 lg:hidden"
+            className="fixed inset-x-0 top-0 z-40 flex h-[100dvh] flex-col overflow-y-auto bg-foreground px-5 pt-24 pb-8 text-background sm:px-8 lg:hidden"
           >
-            <ul className="space-y-1">
+            <ul className="divide-y divide-background/10 border-y border-background/10">
               {navLinks.map((link, i) => (
                 <li key={link.href} className="overflow-hidden">
                   <motion.a
@@ -193,32 +241,43 @@ export default function Navigation() {
                     initial={{ y: "100%" }}
                     animate={{ y: "0%" }}
                     transition={{ duration: 0.8, ease: EASE, delay: 0.15 + i * 0.05 }}
-                    className="flex items-baseline gap-4 font-display text-5xl font-medium tracking-[-0.04em]"
+                    className="group/m flex items-center gap-4 py-3.5 font-display text-[26px] font-medium tracking-[-0.03em] sm:text-3xl"
                   >
                     <span className="font-mono text-[11px] tracking-normal opacity-50">
                       0{i + 1}
                     </span>
                     {link.label}
+                    <ArrowUpRight className="ml-auto h-4 w-4 opacity-40 transition-opacity group-active/m:opacity-100" />
                   </motion.a>
                 </li>
               ))}
             </ul>
             <a
               href={profile.resume}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-background text-sm font-medium text-foreground"
+              onClick={(e) => {
+                setOpen(false);
+                resumeClick(e);
+              }}
+              className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-background text-sm font-medium text-foreground"
             >
-              View résumé
+              <FileText className="h-4 w-4" /> View résumé
             </a>
-            <div className="mt-auto flex justify-between pt-8 font-mono text-[11px] uppercase tracking-[0.14em] opacity-60">
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn ↗
-              </a>
-              <a href={profile.github} target="_blank" rel="noreferrer">
-                GitHub ↗
-              </a>
-              <a href={`mailto:${profile.email}`}>Email ↗</a>
+            {/* Socials: right under the résumé so the phone's browser bar can never hide them */}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                { label: "LinkedIn", href: profile.linkedin, Icon: Linkedin, external: true },
+                { label: "GitHub", href: profile.github, Icon: Github, external: true },
+                { label: "Email", href: `mailto:${profile.email}`, Icon: Mail, external: false },
+              ].map(({ label, href, Icon, external }) => (
+                <a
+                  key={label}
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+                  className="flex h-12 items-center justify-center gap-2 rounded-full border border-background/20 text-[13px] font-medium transition-colors active:bg-background/10"
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                </a>
+              ))}
             </div>
           </motion.div>
         )}

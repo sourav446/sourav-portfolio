@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  SiAmazonwebservices,
   SiBootstrap,
   SiClaude,
   SiCss3,
   SiDocker,
   SiFigma,
   SiGit,
+  SiHostinger,
   SiHtml5,
   SiJavascript,
   SiMongodb,
@@ -26,6 +28,7 @@ import {
 } from "react-icons/si";
 import { VscVscode } from "react-icons/vsc";
 import {
+  Activity,
   Blocks,
   ChevronRight,
   Gauge,
@@ -82,6 +85,9 @@ const ICONS: Record<string, { icon: IconType; color: string }> = {
   Postman: { icon: SiPostman, color: "#ff6c37" },
   "VS Code": { icon: VscVscode, color: "#007acc" },
   Docker: { icon: SiDocker, color: "#2496ed" },
+  AWS: { icon: SiAmazonwebservices, color: "#ff9900" },
+  Hostinger: { icon: SiHostinger, color: "#673de6" },
+  "Load testing": { icon: Activity, color: "#ff4d00" },
   "AI development": { icon: Sparkles, color: "#ff4d00" },
   Claude: { icon: SiClaude, color: "#d97757" },
   Figma: { icon: SiFigma, color: "#f24e1e" },
@@ -302,7 +308,7 @@ const MAX_SCALE = 1.6; // size of the item right under the cursor (demo default 
 const LEAVE_DURATION = 0.7; // s — settle back when the cursor leaves (demo: dur × 2)
 
 // Group colours for the legend dots.
-const GROUP_COLORS = ["#ff4d00", "#3178c6", "#47a248", "#a855f7", "#d97757"];
+const GROUP_COLORS = ["#ff4d00", "#3178c6", "#47a248", "#a855f7", "#f59e0b", "#d97757"];
 
 /** Deterministic pseudo-random in [-1, 1] so the scatter is identical on every render. */
 const jitter = (n: number) => {

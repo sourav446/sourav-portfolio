@@ -9,8 +9,8 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { ArrowDown, ArrowUpRight, MessageCircle, Sparkles } from "lucide-react";
-import CountUp from "@/components/motion/CountUp";
+import { ArrowDown, ArrowUpRight, FileText, MessageCircle, Sparkles } from "lucide-react";
+import { openResume } from "@/components/ResumeModal";
 import { EASE } from "@/components/motion/Reveal";
 import { openContact } from "@/components/Contact";
 import Magnetic from "@/components/motion/Magnetic";
@@ -69,40 +69,41 @@ function AccentLine({ play }: { play: boolean }) {
 }
 
 /**
- * Endless skills marquee under the buttons. The list is rendered twice so the
- * -50% loop is seamless; edges fade out and hovering pauses it.
+ * Career timeline under the title: a short line grows from "Feb 2025" to a live, pulsing dot
+ * and "1.7+ yrs of experience".
  */
-// Phones only: résumé highlights that fill the first screen once the portrait is gone.
-const HIGHLIGHTS = [
-  { value: "1.7+", label: "Years building production apps" },
-  { value: "50+", label: "Reusable React components" },
-  { value: "1k+", label: "Learners on the LMS" },
-];
-
-function MobileHighlights({ play }: { play: boolean }) {
+function ExperienceLine({ play }: { play: boolean }) {
+  const start = 0.35 + ACCENT_WORDS.length * 0.22 + 0.2;
   return (
-    <div className="mt-6 md:hidden">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={play ? { opacity: 1, y: 0 } : undefined}
-        transition={{ duration: 0.8, ease: EASE, delay: 0.85 }}
-        className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl border border-border bg-card/70"
-      >
-        {HIGHLIGHTS.map((h) => (
-          <div key={h.label} className="px-3 py-3.5">
-            <p className="font-display text-[26px] leading-none font-medium tracking-[-0.04em] text-accent">
-              <CountUp value={h.value} duration={1.6} />
-            </p>
-            <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-              {h.label}
-            </p>
-          </div>
-        ))}
-      </motion.div>
-    </div>
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={play ? { opacity: 1 } : undefined}
+      transition={{ duration: 0.6, ease: EASE, delay: start }}
+      className="mt-2 flex items-center gap-2 font-mono text-[11px] tracking-[0.04em] uppercase min-[380px]:gap-2.5 min-[380px]:tracking-[0.1em] sm:gap-3 sm:tracking-[0.14em] md:justify-center desk:justify-start"
+    >
+      <span className="whitespace-nowrap text-foreground/55">Feb 2025</span>
+      <motion.span
+        aria-hidden
+        initial={{ scaleX: 0 }}
+        animate={play ? { scaleX: 1 } : undefined}
+        transition={{ duration: 1.1, ease: EASE, delay: start + 0.1 }}
+        className="h-px w-14 min-w-5 origin-left bg-gradient-to-r from-foreground/20 to-accent sm:w-20"
+      />
+      <span aria-hidden className="relative flex h-2 w-2 shrink-0">
+        <span className="absolute inset-0 rounded-full bg-accent/60 motion-safe:animate-ping" />
+        <span className="relative h-2 w-2 rounded-full bg-accent" />
+      </span>
+      <span className="whitespace-nowrap text-foreground">
+        <span className="font-semibold">1.7+ yrs</span> of experience
+      </span>
+    </motion.p>
   );
 }
 
+/**
+ * Endless skills marquee under the buttons. The list is rendered twice so the
+ * -50% loop is seamless; edges fade out and hovering pauses it.
+ */
 function HeroSkills({ play }: { play: boolean }) {
   const row = (copy: number) =>
     HERO_SKILLS.map((skill) => (
@@ -212,8 +213,8 @@ export default function Hero() {
         className="pointer-events-none absolute top-[10%] right-[-12%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,hsl(18_100%_76%/0.38)_0%,hsl(18_100%_84%/0.17)_40%,transparent_70%)] will-change-transform desk:right-[2%]"
       />
 
-      {/* Copy — phones: top-down with stats + scroll cue filling the screen; tablet: top; desktop: centred-left */}
-      <div className="shell relative z-10 flex min-h-[100svh] flex-col pt-24 pb-4 md:min-h-0 md:pt-28 md:pb-0 desk:h-full desk:flex-row desk:items-center desk:pt-16">
+      {/* Copy — phones: centred above the pinned scroll badge; tablet: top; desktop: centred-left */}
+      <div className="shell relative z-10 flex min-h-[100svh] flex-col justify-center pt-24 pb-28 md:min-h-0 md:justify-start md:pt-28 md:pb-0 desk:h-full desk:flex-row desk:items-center desk:pt-16">
         <motion.div
           style={{ opacity: textOpacity, y: textY }}
           className="w-full max-w-xl md:mx-auto md:max-w-2xl md:text-center desk:mx-0 desk:max-w-[48%] desk:text-left"
@@ -239,6 +240,7 @@ export default function Hero() {
 
           <motion.div style={{ x: line3X }}>
             <AccentLine play={ready} />
+            <ExperienceLine play={ready} />
           </motion.div>
 
           <motion.p
@@ -246,39 +248,48 @@ export default function Hero() {
             className="mt-6 max-w-xl text-base md:mx-auto desk:mx-0 leading-relaxed text-muted-foreground sm:text-[17px]"
           >
             I&apos;m Sourav Gokul V, building responsive, production-ready
-            applications with MongoDB, Express, React and Node.js. From
+            applications with React, Next.js and TypeScript, backed by Node.js,
+            Express and MongoDB. From
             e-commerce to real-time WebRTC platforms, I turn complex
             requirements into seamless user experiences.
           </motion.p>
 
           <motion.div
             {...fade(0.65)}
-            className="mt-8 flex flex-wrap items-center gap-3 md:justify-center desk:justify-start"
+            className="mt-8 grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-center md:justify-center desk:justify-start"
           >
-            <Magnetic>
+            <Magnetic className="col-span-2 md:col-span-1">
               <FillButton
                 href="#projects"
-                className="h-12 bg-foreground px-6 text-sm font-medium text-background shadow-[0_14px_30px_-10px_rgba(0,0,0,0.45)]"
+                className="h-12 w-full bg-foreground px-6 text-sm md:w-auto font-medium text-background shadow-[0_14px_30px_-10px_rgba(0,0,0,0.45)]"
               >
                 View My Work
                 <ArrowUpRight className="h-4 w-4 transition-transform duration-500 ease-out-expo group-hover/fill:translate-x-0.5 group-hover/fill:-translate-y-0.5" />
               </FillButton>
             </Magnetic>
-            <Magnetic>
+            <Magnetic className="w-full md:w-auto">
               <button
                 type="button"
                 onClick={openContact}
-                className="group inline-flex cursor-pointer h-12 items-center gap-2 rounded-full border border-foreground/15 bg-background/80 px-6 text-sm font-medium transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background"
+                className="group inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 md:w-auto rounded-full border border-foreground/15 bg-background/80 px-6 text-sm font-medium transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background"
               >
                 Let&apos;s Talk
                 <MessageCircle className="h-4 w-4" />
               </button>
             </Magnetic>
+            <Magnetic className="w-full md:w-auto">
+              <button
+                type="button"
+                onClick={openResume}
+                className="group inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 md:w-auto rounded-full border border-foreground/15 bg-background/80 px-6 text-sm font-medium transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background"
+              >
+                Résumé
+                <FileText className="h-4 w-4" />
+              </button>
+            </Magnetic>
           </motion.div>
 
           <HeroSkills play={ready} />
-
-          <MobileHighlights play={ready} />
         </motion.div>
 
         {/* Phones only: a rotating "scroll to explore" badge around a bobbing arrow. Pinned to the
