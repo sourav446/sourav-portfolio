@@ -310,6 +310,141 @@ const LEAVE_DURATION = 0.7; // s — settle back when the cursor leaves (demo: d
 // Group colours for the legend dots.
 const GROUP_COLORS = ["#ff4d00", "#3178c6", "#47a248", "#a855f7", "#f59e0b", "#d97757"];
 
+// ── Touch "All" view: bento grid ──────────────────────────────────────────────────────────
+// Core skills get the big tiles, a couple of key skills get wide tiles, everything else is a
+// compact icon tile with a group-colour dot. Tiles pop in with a stagger the first time the grid
+// scrolls into view, and keep the layoutId morph into the flip card.
+
+/** Shorter labels for the compact tiles (the full name stays as the accessible name). */
+const SHORT: Record<string, string> = {
+  "JavaScript (ES6+)": "JavaScript",
+  "Performance optimization": "Performance",
+  "Reusable components": "Components",
+  "Responsive design": "Responsive",
+  "WebRTC (LiveKit)": "WebRTC",
+  "Node.js / Express": "Node.js",
+  "HLS streaming": "HLS",
+  "Git & GitHub": "Git",
+  "AI development": "AI dev",
+};
+
+const BENTO_SIZE: Record<string, "hero" | "wide"> = {
+  "React.js": "hero",
+  "Next.js": "wide",
+  TypeScript: "wide",
+  "JavaScript (ES6+)": "wide",
+  "Node.js / Express": "wide",
+  "WebRTC (LiveKit)": "wide",
+};
+const BENTO_NOTE: Record<string, string> = {
+  "React.js": "Daily driver",
+  "Next.js": "SSR · SEO",
+  TypeScript: "Typed React",
+  "JavaScript (ES6+)": "ES6+",
+  "Node.js / Express": "Backend",
+  "WebRTC (LiveKit)": "Live video",
+};
+
+function SkillBento({
+  onOpen,
+}: {
+  onOpen: (skill: string, el: HTMLButtonElement) => void;
+}) {
+  const reduce = useReducedMotion();
+  // Featured tiles first (in this order), then the rest in group order.
+  const featured = Object.keys(BENTO_SIZE);
+  const ordered = [
+    ...featured,
+    ...skills.flatMap((g) => g.items).filter((s) => !featured.includes(s)),
+  ];
+
+  return (
+    <motion.ul
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      variants={{ show: { transition: { staggerChildren: reduce ? 0 : 0.03 } } }}
+      className="grid grid-flow-dense grid-cols-4 auto-rows-[80px] gap-2 sm:grid-cols-6 sm:auto-rows-[88px]"
+    >
+      {ordered.map((skill) => {
+        const { icon: Icon, color } = iconFor(skill);
+        const size = BENTO_SIZE[skill];
+        const gi = skills.findIndex((g) => g.items.includes(skill));
+        const dot = GROUP_COLORS[gi % GROUP_COLORS.length];
+        const hero = size === "hero";
+        return (
+          <motion.li
+            key={skill}
+            variants={{
+              hidden: reduce ? { opacity: 0 } : { opacity: 0, scale: 0.85, y: 12 },
+              show: { opacity: 1, scale: 1, y: 0 },
+            }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className={hero ? "col-span-2 row-span-2" : size === "wide" ? "col-span-2" : ""}
+          >
+            <motion.button
+              type="button"
+              layoutId={`skill-${slug(skill)}`}
+              onClick={(e) => onOpen(skill, e.currentTarget)}
+              whileTap={{ scale: 0.96 }}
+              aria-haspopup="dialog"
+              aria-label={skill}
+              className={`relative flex h-full w-full overflow-hidden rounded-2xl border text-left outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                hero
+                  ? "flex-col justify-between border-foreground bg-foreground p-4 text-background"
+                  : size
+                    ? "items-center gap-3 border-border bg-card px-3"
+                    : "flex-col items-center justify-center gap-1.5 border-border bg-card px-1"
+              }`}
+            >
+              {hero ? (
+                <>
+                  <Icon className="h-11 w-11 motion-safe:animate-[spin_14s_linear_infinite]" style={{ color }} />
+                  <span>
+                    <span className="block font-display text-[22px] leading-none font-medium tracking-[-0.03em]">
+                      React
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[10px] tracking-[0.12em] text-background/60 uppercase">
+                      {BENTO_NOTE[skill]}
+                    </span>
+                  </span>
+                </>
+              ) : size ? (
+                <>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background">
+                    <Icon className="h-5 w-5" style={{ color }} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[14px] leading-tight font-medium">
+                      {SHORT[skill] ?? skill}
+                    </span>
+                    <span className="mt-0.5 block truncate font-mono text-[9.5px] tracking-[0.1em] text-muted-foreground uppercase">
+                      {BENTO_NOTE[skill]}
+                    </span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Icon className="h-6 w-6" style={{ color }} />
+                  <span className="w-full truncate text-center text-[10.5px] leading-tight font-medium">
+                    {SHORT[skill] ?? skill}
+                  </span>
+                </>
+              )}
+              {/* Group colour */}
+              <span
+                aria-hidden
+                className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full"
+                style={{ background: dot }}
+              />
+            </motion.button>
+          </motion.li>
+        );
+      })}
+    </motion.ul>
+  );
+}
+
 /** Deterministic pseudo-random in [-1, 1] so the scatter is identical on every render. */
 const jitter = (n: number) => {
   const x = Math.sin(n * 12.9898) * 43758.5453;
@@ -895,35 +1030,39 @@ export default function TechStack() {
               </div>
             </div>
 
-            <div className="space-y-8">
-              {skills.map((group, gi) =>
-                mobileFilter !== -1 && mobileFilter !== gi ? null : (
-                  <motion.div
-                    key={group.group}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.45,
-                      ease: EASE,
-                      delay: mobileFilter === -1 ? gi * 0.04 : 0,
-                    }}
-                  >
-                    <h3 className="label mb-3 flex items-center gap-3 !text-foreground">
-                      <span className="text-accent">
-                        {String(gi + 1).padStart(2, "0")}
-                      </span>
-                      {group.group}
-                      <span className="h-px flex-1 bg-border" />
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
-                      {group.items.map((skill) => (
-                        <SkillTile key={skill} skill={skill} onOpen={onOpen} />
-                      ))}
-                    </div>
-                  </motion.div>
-                ),
-              )}
-            </div>
+            {mobileFilter === -1 ? (
+              <SkillBento onOpen={onOpen} />
+            ) : (
+              <div className="space-y-8">
+                {skills.map((group, gi) =>
+                  mobileFilter !== gi ? null : (
+                    <motion.div
+                      key={group.group}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.45,
+                        ease: EASE,
+                        delay: 0,
+                      }}
+                    >
+                      <h3 className="label mb-3 flex items-center gap-3 !text-foreground">
+                        <span className="text-accent">
+                          {String(gi + 1).padStart(2, "0")}
+                        </span>
+                        {group.group}
+                        <span className="h-px flex-1 bg-border" />
+                      </h3>
+                      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                        {group.items.map((skill) => (
+                          <SkillTile key={skill} skill={skill} onOpen={onOpen} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  ),
+                )}
+              </div>
+            )}
           </div>
         )}
 
