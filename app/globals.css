@@ -189,3 +189,142 @@ html.lenis body {
     transform: translateY(4px);
   }
 }
+
+/* ── Page-load intro (components/Intro.tsx) ─────────────────────────── */
+/*
+ * One CSS timeline from the first paint, transform/opacity only (runs on the compositor, so it
+ * stays smooth while the page is still loading). Times are mirrored in Intro.tsx.
+ *   0.08s  name lands, light sweeps across      0.40s  orange rule + role
+ *   1.10s  name shrinks away                    1.28s  "SG" appears and starts gliding
+ *   1.30s  backdrop starts to clear              2.00s  lands in the nav coin; intro removed
+ */
+html[data-intro="skip"] #intro {
+  display: none;
+}
+html[data-intro-skip] #intro {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.intro-name {
+  white-space: nowrap;
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: transparent;
+  background: linear-gradient(
+    100deg,
+    hsl(var(--background)) 0 40%,
+    #fff 47%,
+    #ffc9a3 50%,
+    #fff 53%,
+    hsl(var(--background)) 60% 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation:
+    intro-name-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both,
+    intro-shine 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.25s both,
+    intro-name-out 0.25s cubic-bezier(0.65, 0, 0.35, 1) 1.1s forwards;
+}
+
+/* "SG", centred over the name at the same size */
+.intro-sg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: hsl(var(--background));
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+}
+/* Only once the head-of-body script has measured the flight (otherwise everything just fades). */
+html[data-intro-go] .intro-sg {
+  animation:
+    intro-in 0.2s ease-out 1.28s forwards,
+    intro-fly 0.7s cubic-bezier(0.65, 0, 0.35, 1) 1.3s forwards,
+    intro-out 0.12s linear 1.92s forwards;
+}
+
+.intro-rule {
+  transform: scaleX(0);
+  animation: intro-rule 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.4s forwards;
+}
+.intro-role {
+  opacity: 0;
+  animation: intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.45s forwards;
+}
+.intro-extras {
+  animation: intro-drop 0.25s cubic-bezier(0.65, 0, 0.35, 1) 1.1s forwards;
+}
+.intro-glow {
+  opacity: 0;
+  animation: intro-in 0.7s ease 0.05s forwards;
+}
+.intro-backdrop {
+  animation: intro-out 0.7s cubic-bezier(0.65, 0, 0.35, 1) 1.3s forwards;
+}
+
+@keyframes intro-name-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes intro-shine {
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes intro-rule {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes intro-name-out {
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes intro-drop {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes intro-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes intro-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes intro-fly {
+  to {
+    transform: translate(calc(-50% + var(--fly-x, 0px)), calc(-50% + var(--fly-y, 0px))) scale(var(--fly-s, 0.15));
+  }
+}

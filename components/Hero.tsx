@@ -11,6 +11,7 @@ import {
 } from "framer-motion";
 import { ArrowDown, ArrowUpRight, FileText, MessageCircle, Sparkles } from "lucide-react";
 import { openResume } from "@/components/ResumeModal";
+import { whenIntroDone } from "@/components/Intro";
 import { EASE } from "@/components/motion/Reveal";
 import { openContact } from "@/components/Contact";
 import Magnetic from "@/components/motion/Magnetic";
@@ -140,7 +141,7 @@ export default function Hero() {
   const showPortrait = useMediaQuery("(min-width: 768px)");
   // Entrance plays once the page has hydrated.
   const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  useEffect(() => whenIntroDone(() => setReady(true)), []);
   const fine = useFinePointer();
 
   // Scroll-linked motion as the hero leaves the viewport.

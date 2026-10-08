@@ -122,8 +122,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${inter.variable} ${interTight.variable} ${instrumentSerif.variable} ${jetbrains.variable}`}
     >
+      <head>
+        {/* Decide before first paint whether the intro plays (once per session, never with reduced motion). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(sessionStorage.getItem('intro-seen')||matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.dataset.intro='skip'}catch(e){document.documentElement.dataset.intro='skip'}",
+          }}
+        />
+      </head>
       <body>
         <script
           type="application/ld+json"

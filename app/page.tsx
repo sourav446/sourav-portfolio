@@ -1,14 +1,10 @@
 import Providers from "@/components/Providers";
 import Navigation from "@/components/Navigation";
+import Intro, { IntroFlyScript } from "@/components/Intro";
 import Hero from "@/components/Hero";
-import Work from "@/components/Work";
-import CaseStudies from "@/components/CaseStudies";
-import TechStack from "@/components/TechStack";
-import Experience from "@/components/Experience";
-import About from "@/components/About";
 import ContactDialog from "@/components/Contact";
 import ResumeModal from "@/components/ResumeModal";
-import Footer from "@/components/Footer";
+import LazySections, { LazyFooter } from "@/components/LazySections";
 
 export default function Page() {
   return (
@@ -19,22 +15,17 @@ export default function Page() {
       >
         Skip to content
       </a>
+      <Intro />
       <Navigation />
+      {/* Measures the intro's flight to the nav coin while the HTML is still parsing */}
+      <IntroFlyScript />
       <main>
         {/* 01 */}
         <Hero />
-        {/* 02 */}
-        <Work />
-        {/* 03 */}
-        <CaseStudies />
-        {/* 04 */}
-        <TechStack />
-        {/* 05 */}
-        <Experience />
-        {/* 06 */}
-        <About />
+        {/* 02–06: code-split, mounted once the intro has handed over */}
+        <LazySections />
       </main>
-      <Footer />
+      <LazyFooter />
       <ContactDialog />
       <ResumeModal />
     </Providers>

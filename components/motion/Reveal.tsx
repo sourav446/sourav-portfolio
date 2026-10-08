@@ -95,15 +95,18 @@ export function FadeIn({
 
 export const item = fadeUp;
 
-/** Plain, scannable section header: small index, clear title, one-line intro. */
+/** Plain, scannable section header: small index, clear title, one-line intro (or a control on the right). */
 export function SectionHeader({
   index,
   title,
   intro,
+  aside,
 }: {
   index: string;
   title: string;
   intro?: string;
+  /** Rendered where the intro would sit, e.g. a view switch. */
+  aside?: React.ReactNode;
 }) {
   return (
     <FadeIn className="flex flex-col gap-4 border-t border-foreground pt-5 md:flex-row md:items-end md:justify-between md:gap-10">
@@ -118,6 +121,7 @@ export function SectionHeader({
           {intro}
         </p>
       )}
+      {aside}
     </FadeIn>
   );
 }

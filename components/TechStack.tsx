@@ -738,76 +738,229 @@ function SkillCloud({
   );
 }
 
+/** Headline beside the category name in the right-hand panel. */
+const GROUP_HEADLINE: Record<string, string> = {
+  All: "Everything I work with, by category",
+  Core: "React is my primary library",
+  Frontend: "Interfaces that feel fast and polished",
+  "Real-time & backend": "Live video, chat and the services behind them",
+  "Tools & practices": "The habits behind clean releases",
+  "Cloud & testing": "Taking apps live and proving they scale",
+  AI: "AI as part of how I build",
+};
+const PRIMARY_SKILL = "React.js";
+
 /**
- * Quick view: every skill grouped by category in plain cards — fast to scan, no hunting with
- * the cursor. Each row still opens the flip card.
+ * Quick view: categories down the left as hairline rows (same ink-sweep treatment as the About
+ * facts), the selected category's skills as compact rows on the right. Arrow keys move through
+ * the categories, and any skill opens its flip card.
  */
 function SkillList({
   onOpen,
 }: {
   onOpen: (skill: string, el: HTMLButtonElement) => void;
 }) {
-  return (
-    <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
-      {skills.map((group, gi) => (
-        <motion.div
-          key={group.group}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: gi * 0.06 }}
-          className="mb-4 break-inside-avoid rounded-2xl border border-border bg-card p-5"
+  // 0 = All (every category, under sub-headings), then each category
+  const tabsList = [{ group: "All", items: skills.flatMap((g) => g.items) }, ...skills];
+  const [active, setActive] = useState(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const group = tabsList[active];
+  const color =
+    active === 0 ? "hsl(var(--foreground))" : GROUP_COLORS[(active - 1) % GROUP_COLORS.length];
+
+  // compact: for the 3-column All view, the project count sits under the name instead of beside it
+  const renderRow = (skill: string, compact = false) => {
+    const { icon: Icon, color: brand } = iconFor(skill);
+    const used = projectsUsing(skill);
+    return (
+      <motion.li
+        key={skill}
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          show: { opacity: 1, y: 0 },
+        }}
+        transition={{ duration: 0.4, ease: EASE }}
+      >
+        <button
+          type="button"
+          onClick={(e) => onOpen(skill, e.currentTarget)}
+          aria-haspopup="dialog"
+          className="group/row flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors duration-200 outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <h3 className="flex items-center gap-2.5 text-[15px] font-semibold">
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }}
-            />
-            {group.group}
-            <span className="ml-auto rounded-full bg-background px-2 py-0.5 font-mono text-[11px] font-normal text-muted-foreground">
-              {group.items.length}
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-border transition-transform duration-500 ease-out-expo group-hover/row:scale-110">
+            <Icon className="h-4 w-4" style={{ color: brand }} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2 text-[14px] font-medium">
+              <span className="truncate">{skill}</span>
+              {skill === PRIMARY_SKILL && (
+                <span className="rounded-full bg-accent/10 px-1.5 py-px font-mono text-[9px] font-semibold tracking-[0.1em] text-accent uppercase">
+                  Primary
+                </span>
+              )}
             </span>
-          </h3>
-          <ul className="mt-3 -mx-2">
-            {group.items.map((skill) => {
-              const { icon: Icon, color } = iconFor(skill);
-              const used = projectsUsing(skill);
-              return (
-                <li key={skill}>
-                  <button
-                    type="button"
-                    onClick={(e) => onOpen(skill, e.currentTarget)}
-                    aria-haspopup="dialog"
-                    className="group/row flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors duration-200 outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-accent"
+            {compact && used.length > 0 && (
+              <span className="mt-0.5 block font-mono text-[10px] tracking-wide text-muted-foreground">
+                {used.length} project{used.length > 1 ? "s" : ""}
+              </span>
+            )}
+          </span>
+          {!compact && used.length > 0 && (
+            <span className="font-mono text-[10px] tracking-wide text-muted-foreground">
+              {used.length} project{used.length > 1 ? "s" : ""}
+            </span>
+          )}
+          <ChevronRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all duration-300 group-hover/row:translate-x-0 group-hover/row:text-accent group-hover/row:opacity-100" />
+        </button>
+      </motion.li>
+    );
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = (active + step + tabsList.length) % tabsList.length;
+    setActive(next);
+    tabs.current[next]?.focus();
+  };
+
+  return (
+    <div className="grid grid-cols-12 gap-8 xl:gap-10">
+      {/* Categories */}
+      <div
+        role="tablist"
+        aria-orientation="vertical"
+        aria-label="Skill categories"
+        onKeyDown={onKeyDown}
+        className="col-span-4 self-start"
+      >
+        {tabsList.map((g, gi) => {
+          const on = gi === active;
+          return (
+            <button
+              key={g.group}
+              ref={(el) => {
+                tabs.current[gi] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`skills-tab-${gi}`}
+              aria-selected={on}
+              aria-controls="skills-panel"
+              tabIndex={on ? 0 : -1}
+              onClick={() => setActive(gi)}
+              className="group/tab relative flex w-full cursor-pointer items-center gap-4 overflow-hidden rounded-xl py-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {/* Ink sweep: fills the selected row, previews on hover */}
+              <span
+                aria-hidden
+                className={`absolute inset-0 origin-left bg-foreground transition-transform duration-500 ease-out-expo ${
+                  on ? "scale-x-100" : "scale-x-0 group-hover/tab:scale-x-[0.03]"
+                }`}
+              />
+              <span
+                className={`relative w-7 pl-3 font-mono text-[11px] transition-colors duration-500 ${
+                  on ? "text-accent" : "text-muted-foreground"
+                }`}
+              >
+                {String(gi).padStart(2, "0")}
+              </span>
+              <span
+                className={`relative flex-1 font-display text-[19px] font-medium tracking-[-0.02em] transition-[color,transform] duration-500 ease-out-expo ${
+                  on
+                    ? "translate-x-1 text-background"
+                    : "text-foreground/60 group-hover/tab:translate-x-1 group-hover/tab:text-foreground"
+                }`}
+              >
+                {g.group}
+              </span>
+              <span
+                className={`relative pr-4 font-mono text-[11px] transition-colors duration-500 ${
+                  on ? "text-background/60" : "text-muted-foreground"
+                }`}
+              >
+                {g.items.length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected category */}
+      <div
+        id="skills-panel"
+        role="tabpanel"
+        aria-labelledby={`skills-tab-${active}`}
+        className={`col-span-8 ${active === 0 ? "relative" : "min-h-[22rem]"}`}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={group.group}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35, ease: EASE }}
+            // All: fill the panel (its height comes from the category list) so only the skills scroll
+            className={active === 0 ? "absolute inset-0 flex flex-col" : undefined}
+          >
+            <div className="flex shrink-0 items-baseline gap-3 border-b border-border pb-4">
+              <span className="h-2 w-2 shrink-0 self-center rounded-full" style={{ background: color }} />
+              <h3 className="font-display text-2xl font-medium tracking-[-0.03em]">{group.group}</h3>
+              <span className="text-sm text-muted-foreground">{GROUP_HEADLINE[group.group]}</span>
+            </div>
+
+            {active === 0 ? (
+              <div
+                data-lenis-prevent
+                className="-mr-3 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-3 pb-6 [scrollbar-color:hsl(var(--foreground)/0.2)_transparent] [scrollbar-width:thin]"
+              >
+              {skills.map((g, gi) => (
+                <div key={g.group} className="mt-6">
+                  <h4 className="flex items-center gap-3 font-mono text-[11px] tracking-[0.14em] uppercase">
+                    <span className="text-accent">{String(gi + 1).padStart(2, "0")}</span>
+                    <span>{g.group}</span>
+                    <span className="h-px flex-1 bg-border" />
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: GROUP_COLORS[gi % GROUP_COLORS.length] }}
+                    />
+                    <span className="text-muted-foreground">{g.items.length}</span>
+                  </h4>
+                  <motion.ul
+                    initial="hidden"
+                    animate="show"
+                    variants={{ show: { transition: { staggerChildren: 0.02 } } }}
+                    className="mt-1 grid grid-cols-2 gap-x-6 xl:grid-cols-3"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background ring-1 ring-border transition-colors group-hover/row:bg-card">
-                      <Icon className="h-4 w-4" style={{ color }} />
-                    </span>
-                    <span className="flex-1 text-[14px] font-medium">
-                      {skill}
-                    </span>
-                    {used.length > 0 && (
-                      <span className="hidden font-mono text-[10px] tracking-wide text-muted-foreground sm:inline">
-                        {used.length} project{used.length > 1 ? "s" : ""}
-                      </span>
-                    )}
-                    <ChevronRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all duration-300 group-hover/row:translate-x-0 group-hover/row:text-accent group-hover/row:opacity-100" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </motion.div>
-      ))}
+                    {g.items.map((skill) => renderRow(skill, true))}
+                  </motion.ul>
+                </div>
+              ))}
+              </div>
+            ) : (
+              <motion.ul
+                initial="hidden"
+                animate="show"
+                variants={{ show: { transition: { staggerChildren: 0.035 } } }}
+                className="grid grid-cols-2 gap-x-6"
+              >
+                {group.items.map((skill) => renderRow(skill))}
+              </motion.ul>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
 type View = "interactive" | "quick";
 const VIEWS: { id: View; label: string; Icon: typeof Sparkles }[] = [
-  { id: "interactive", label: "Interactive", Icon: Sparkles },
   { id: "quick", label: "Quick view", Icon: LayoutList },
+  { id: "interactive", label: "Interactive", Icon: Sparkles },
 ];
-const VIEW_KEY = "skills-view";
+const VIEW_KEY = "skills-view-v2"; // v2: quick view became the default
 
 /** Segmented switch between the two views; the active pill slides between options. */
 function ViewSwitch({
@@ -859,7 +1012,7 @@ export default function TechStack() {
   const opener = useRef<HTMLButtonElement | null>(null);
   const isLg = useIsLg();
   const fine = useFinePointer();
-  const [view, setView] = useState<View>("interactive");
+  const [view, setView] = useState<View>("quick");
   const [mobileFilter, setMobileFilter] = useState(-1); // touch layout: -1 = all groups
 
   // Full screen (browser Fullscreen API, so Esc exits just like a video). The flip card is
@@ -907,7 +1060,7 @@ export default function TechStack() {
   // Remember the visitor's choice (per browser; falls back to the default if storage is blocked).
   useEffect(() => {
     try {
-      if (localStorage.getItem(VIEW_KEY) === "quick") setView("quick");
+      if (localStorage.getItem(VIEW_KEY) === "interactive") setView("interactive");
     } catch {}
   }, []);
   const changeView = (v: View) => {
@@ -933,7 +1086,7 @@ export default function TechStack() {
       <SectionHeader
         index="04"
         title="Skills"
-        intro="Tap any skill to flip its card and see where I've used it."
+        aside={isLg && fine && !fullscreen ? <ViewSwitch view={view} onChange={changeView} /> : undefined}
       />
 
       <div
@@ -955,16 +1108,7 @@ export default function TechStack() {
                   Full screen · Esc to exit
                 </span>
               </p>
-            ) : (
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <p className="text-sm text-muted-foreground">
-                  {view === "interactive"
-                    ? "Move your cursor across the skills — or switch to a quick list."
-                    : "Every skill by category. Click any one for details."}
-                </p>
-                <ViewSwitch view={view} onChange={changeView} />
-              </div>
-            )}
+            ) : null}
             {view === "interactive" || fullscreen ? (
               <motion.div
                 key="interactive"

@@ -8,6 +8,7 @@ import { navLinks, profile } from "@/lib/content";
 import { EASE } from "@/components/motion/Reveal";
 import Magnetic from "@/components/motion/Magnetic";
 import { openContact } from "@/components/Contact";
+import { whenIntroDone } from "@/components/Intro";
 import FillButton from "@/components/motion/FillButton";
 
 /** Which section is currently in the middle band of the viewport. */
@@ -20,11 +21,25 @@ function useActiveSection(ids: string[]) {
       },
       { rootMargin: "-45% 0px -50% 0px" },
     );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    // Sections below the hero are lazy-mounted after the intro, so pick them up as they appear.
+    const seen = new Set<string>();
+    const observeNew = () => {
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && !seen.has(id)) {
+          seen.add(id);
+          observer.observe(el);
+        }
+      });
+      if (seen.size === ids.length) mutations.disconnect();
+    };
+    const mutations = new MutationObserver(observeNew);
+    mutations.observe(document.body, { childList: true, subtree: true });
+    observeNew();
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return active;
@@ -56,11 +71,16 @@ export default function Navigation() {
     if (!window.matchMedia("(hover: none)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let back: ReturnType<typeof setTimeout>;
-    const flip = setTimeout(() => {
-      setCoinFlipped(true);
-      back = setTimeout(() => setCoinFlipped(false), 2600);
-    }, 1800);
+    let flip: ReturnType<typeof setTimeout>;
+    // Wait for the intro, whose name lands in this coin, before flipping it.
+    const stop = whenIntroDone(() => {
+      flip = setTimeout(() => {
+        setCoinFlipped(true);
+        back = setTimeout(() => setCoinFlipped(false), 2600);
+      }, 1800);
+    });
     return () => {
+      stop();
       clearTimeout(flip);
       clearTimeout(back);
     };
@@ -113,13 +133,15 @@ export default function Navigation() {
                 />
               </svg>
               {/* Coin: "SG" on the front, my face on the back */}
-              <span className="relative h-9 w-9 [perspective:500px]">
+              {/* data-intro-target: the intro's full name flies into this coin */}
+              <span data-intro-target className="relative h-9 w-9 [perspective:500px]">
                 <span
                   className={`relative block h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.34,1.4,0.5,1)] [transform-style:preserve-3d] motion-safe:group-hover/logo:[transform:rotateY(180deg)] ${
                     coinFlipped ? "[transform:rotateY(180deg)]" : ""
                   }`}
                 >
                   <span
+                    data-intro-face
                     className={`absolute inset-0 flex items-center justify-center rounded-full font-display text-sm font-semibold tracking-tight transition-colors duration-500 [backface-visibility:hidden] ${
                       open ? "bg-background text-foreground" : "bg-foreground text-background"
                     }`}
