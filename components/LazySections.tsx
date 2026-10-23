@@ -25,6 +25,8 @@ const TechStack = dynamic(restLoaders[1], { ssr: false });
 const Experience = dynamic(restLoaders[2], { ssr: false });
 const About = dynamic(restLoaders[3], { ssr: false });
 const Footer = dynamic(restLoaders[4], { ssr: false });
+// The AI bot is not held back by the intro: its chunk loads right away so it is on screen from the start.
+export const LazyChat = dynamic(() => import("@/components/ChatAssistant"), { ssr: false });
 
 let workReady: Promise<unknown> | null = null;
 let restReady: Promise<unknown> | null = null;

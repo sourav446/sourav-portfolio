@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import { mailConfigured, sendMail } from "@/lib/mailer";
 
 type ContactPayload = {
   name: string;
@@ -51,14 +51,13 @@ export async function POST(req: Request) {
     const subject = payload.subject!.trim();
     const message = payload.message!.trim();
 
-    if (!process.env.RESEND_API_KEY || !process.env.CONTACT_TO_EMAIL) {
+    if (!mailConfigured()) {
       return NextResponse.json(
         { error: "Email service is not configured yet — please email me directly." },
         { status: 500 },
       );
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
 
     const safe = {
       name: escapeHtml(String(name)),
@@ -67,9 +66,8 @@ export async function POST(req: Request) {
       message: escapeHtml(String(message)),
     };
 
-    const { error } = await resend.emails.send({
-      from: process.env.CONTACT_FROM_EMAIL || "Portfolio <onboarding@resend.dev>",
-      to: process.env.CONTACT_TO_EMAIL,
+    // Sent from your Gmail via Nodemailer — see lib/mailer.ts
+    const sent = await sendMail({
       // Hitting Reply in your inbox answers the visitor directly.
       replyTo: email,
       subject: `New Portfolio Inquiry – ${subject}`,
@@ -122,8 +120,7 @@ export async function POST(req: Request) {
   `,
     });
 
-    if (error) {
-      console.error("Resend send failed:", error);
+    if (!sent.ok) {
       return NextResponse.json(
         { error: "Unable to send your message right now." },
         { status: 502 },

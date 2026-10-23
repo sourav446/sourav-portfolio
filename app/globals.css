@@ -328,3 +328,99 @@ html[data-intro-go] .intro-sg {
     transform: translate(calc(-50% + var(--fly-x, 0px)), calc(-50% + var(--fly-y, 0px))) scale(var(--fly-s, 0.15));
   }
 }
+
+/* ── Chat launcher AI bot (components/ChatAssistant.tsx) ─────────────── */
+/* Always: hovers, blinks, antenna/jet glow, a spark orbiting the halo.
+   Once (when "Hey there!" shows): the right hand waves. */
+.bot-float {
+  animation: bot-float 2.6s ease-in-out infinite;
+}
+.bot-shadow {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: bot-shadow 2.6s ease-in-out infinite;
+}
+.bot-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: bot-blink 4s ease-in-out infinite;
+}
+.bot-antenna,
+.bot-jet {
+  animation: bot-glow 1.4s ease-in-out infinite alternate;
+}
+/* Right arm pivots at the shoulder (top of the arm) */
+.bot-hand {
+  transform-box: fill-box;
+  transform-origin: 25% 5%;
+}
+.is-greeting .bot-hand {
+  animation: bot-wave 1.2s ease-in-out 1;
+}
+@keyframes bot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes bot-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.78);
+    opacity: 0.6;
+  }
+}
+@keyframes bot-blink {
+  0%,
+  44%,
+  50%,
+  100% {
+    transform: scaleY(1);
+  }
+  47% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes bot-glow {
+  to {
+    opacity: 0.45;
+  }
+}
+@keyframes bot-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-120deg);
+  }
+  50% {
+    transform: rotate(-95deg);
+  }
+  70% {
+    transform: rotate(-125deg);
+  }
+  85% {
+    transform: rotate(-100deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bot-float,
+  .bot-shadow,
+  .bot-eyes,
+  .bot-antenna,
+  .bot-jet,
+  .is-greeting .bot-hand {
+    animation: none;
+  }
+  .bot-spark {
+    display: none;
+  }
+}

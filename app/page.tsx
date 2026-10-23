@@ -4,7 +4,7 @@ import Intro, { IntroFlyScript } from "@/components/Intro";
 import Hero from "@/components/Hero";
 import ContactDialog from "@/components/Contact";
 import ResumeModal from "@/components/ResumeModal";
-import LazySections, { LazyFooter } from "@/components/LazySections";
+import LazySections, { LazyChat, LazyFooter } from "@/components/LazySections";
 
 export default function Page() {
   return (
@@ -28,6 +28,7 @@ export default function Page() {
       <LazyFooter />
       <ContactDialog />
       <ResumeModal />
+      <LazyChat />
     </Providers>
   );
 }
