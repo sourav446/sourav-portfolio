@@ -16,6 +16,7 @@ const GREETING_MS = 2200; // how long the greeting stays up
 const SUGGESTED_QUESTIONS = [
   "Tell me about Sourav's experience.",
   "Is he a fit for a React developer role?",
+  "Is he a fit for a MERN Stack developer role?",
   "How can I contact him?",
 ];
 
