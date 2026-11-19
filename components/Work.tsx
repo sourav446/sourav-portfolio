@@ -14,6 +14,7 @@ import StoreVisual from "@/components/StoreVisual";
 import { LmsVisual, PmtVisual } from "@/components/ProjectMocks";
 import { useSpotlight } from "@/components/motion/useSpotlight";
 import { useMediaQuery } from "@/components/motion/useMediaQuery";
+import CaseStudyLink from "@/components/CaseStudyLink";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -123,8 +124,10 @@ function ProjectCard({ p, i, total }: { p: Project; i: number; total: number }) 
             <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/live:translate-x-0.5 group-hover/live:-translate-y-0.5" />
           </a>
         )}
-        <div className="mt-6">
+        {/* Stat, with the case-study pill beside it (high up, so the pinned card never clips it) */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <Stat stat={p.stat} />
+          {p.slug && <CaseStudyLink slug={p.slug} />}
         </div>
         <div className="mt-5">
           <Highlights items={p.highlights} />
@@ -277,6 +280,7 @@ function CarouselCard({ p, i }: { p: Project; i: number }) {
           </span>
           <span className="text-sm text-muted-foreground">{p.stat.label}</span>
         </p>
+        {p.slug && <CaseStudyLink slug={p.slug} className="mb-4" />}
 
         {/* Highlights + stack: folded by default so a whole card fits on a phone screen */}
         <button

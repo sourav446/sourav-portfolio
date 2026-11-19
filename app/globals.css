@@ -329,98 +329,317 @@ html[data-intro-go] .intro-sg {
   }
 }
 
-/* ── Chat launcher AI bot (components/ChatAssistant.tsx) ─────────────── */
-/* Always: hovers, blinks, antenna/jet glow, a spark orbiting the halo.
-   Once (when "Hey there!" shows): the right hand waves. */
-.bot-float {
-  animation: bot-float 2.6s ease-in-out infinite;
+/* ── Chat launcher mech spider (components/SpiderBot.tsx) ────────────── */
+/* The corner web spins in (spokes draw, then the spiral, then the hub mesh). The spider is one
+   image, so it moves as a whole: a gentle bob, a hop while busy, a squash while held, a wiggle
+   while it talks. A glow pulses over its eyes; eyelids close while it naps. */
+
+/* Web paths use pathLength="1", so a dash of 1 is the whole thread */
+.spider-web-spoke,
+.spider-web-spiral,
+.spider-mini-spoke,
+.spider-mini-ring {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
-.bot-shadow {
+.spider-web-spoke {
+  animation: spider-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.spider-web-spiral {
+  animation: spider-draw 1.1s ease-out 0.55s forwards;
+}
+.spider-web-ring {
+  opacity: 0;
+  animation: spider-fade 0.4s ease-out 0.4s forwards;
+}
+.spider-mini-spoke,
+.spider-mini-ring {
+  animation: spider-draw 0.45s ease-out forwards;
+}
+
+.spider-img {
+  animation: spider-bob 2.8s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.spider-pose-curl .spider-img {
+  animation: none;
+  transform: scale(0.94, 0.97);
+}
+.spider-pose-nap .spider-img {
+  animation: spider-bob 4.5s ease-in-out infinite;
+}
+
+/* Legs: each turns at its own hip (transform-origin set inline, in image units). --s flips the
+   direction for the right side, so "+" always lifts a leg away from the body. */
+.spider-leg {
+  transform-box: view-box;
+  --s: 1;
+  animation: spider-leg-idle var(--d, 2.6s) ease-in-out var(--dl, 0s) infinite;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.spider-leg-r {
+  --s: -1;
+}
+.spider-leg-lo {
+  --d: 2.6s;
+  --dl: 0s;
+}
+.spider-leg-li {
+  --d: 2.2s;
+  --dl: -0.7s;
+}
+.spider-leg-ro {
+  --d: 2.9s;
+  --dl: -1.1s;
+}
+.spider-leg-ri {
+  --d: 2.4s;
+  --dl: -0.3s;
+}
+/* Walking: a quick ripple, diagonal pairs in step like a real spider */
+.spider-pose-walk .spider-leg {
+  animation: spider-leg-walk 0.32s ease-in-out infinite alternate;
+}
+.spider-pose-walk .spider-leg-li,
+.spider-pose-walk .spider-leg-ro {
+  animation-delay: -0.16s;
+}
+/* Climbing the silk: legs reach up and pull, diagonal pairs taking turns (one cycle = two pulls) */
+.spider-pose-climb .spider-leg {
+  animation: spider-leg-climb 0.56s ease-in-out infinite;
+}
+.spider-pose-climb .spider-leg-li,
+.spider-pose-climb .spider-leg-ro {
+  animation-delay: -0.28s;
+}
+/* Gliding back down: legs held slightly in, still */
+.spider-pose-rappel .spider-leg {
+  animation: none;
+  transform: rotate(calc(var(--s) * -5deg));
+}
+/* Grabbed / napping: legs tuck in toward the body */
+.spider-pose-curl .spider-leg,
+.spider-pose-nap .spider-leg {
+  animation: none;
+  transform: rotate(calc(var(--s) * -10deg));
+}
+/* Talking: the front-right leg waves */
+.is-greeting .spider-leg-ro {
+  animation: spider-leg-wave 0.5s ease-in-out 4;
+}
+
+/* Asleep (scrolled down): lies down (sinks, tilts, flattens), legs tucked, slow breathing,
+   eyes shut, snoring z. Waking up: one big stretch back to normal. */
+.spider-pose-sleep .spider-img {
+  transform-origin: 50% 100%;
+  animation:
+    spider-lie 0.6s ease-out forwards,
+    spider-breathe 3.6s ease-in-out 0.6s infinite;
+}
+.spider-pose-sleep .spider-leg {
+  animation: none;
+  transform: rotate(calc(var(--s) * -16deg));
+  transition-duration: 0.6s;
+}
+.spider-pose-sleep .spider-eyeglow {
+  opacity: 0;
+  animation: none;
+}
+.spider-pose-sleep .spider-lids {
+  transform: scaleY(1);
+}
+.spider-pose-sleep .spider-zz {
+  animation: spider-zz 2.4s ease-in-out infinite;
+}
+.spider-pose-wake .spider-img {
+  transform-origin: 50% 100%;
+  animation: spider-stretch 0.75s cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.spider-pose-wake .spider-leg {
+  animation: none;
+  transform: rotate(calc(var(--s) * 10deg));
+  transition-duration: 0.4s;
+}
+@keyframes spider-lie {
+  to {
+    transform: translateY(5px) rotate(-5deg) scale(1, 0.93);
+  }
+}
+@keyframes spider-breathe {
+  0%,
+  100% {
+    transform: translateY(5px) rotate(-5deg) scale(1, 0.93);
+  }
+  50% {
+    transform: translateY(5px) rotate(-5deg) scale(1.02, 0.96);
+  }
+}
+@keyframes spider-stretch {
+  0% {
+    transform: translateY(5px) rotate(-5deg) scale(1, 0.93);
+  }
+  45% {
+    transform: translateY(-4px) rotate(0deg) scale(1.05, 1.04);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* Eyes: a glow that pulses, eyelids that close while it naps, and a snoring z */
+.spider-eyeglow {
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  animation: spider-glow 1.6s ease-in-out infinite alternate;
+}
+.spider-pose-nap .spider-eyeglow {
+  opacity: 0;
+  animation: none;
+}
+.spider-lids {
   transform-box: fill-box;
   transform-origin: 50% 50%;
-  animation: bot-shadow 2.6s ease-in-out infinite;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
 }
-.bot-eyes {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  animation: bot-blink 4s ease-in-out infinite;
+.spider-pose-nap .spider-lids {
+  transform: scaleY(1);
 }
-.bot-antenna,
-.bot-jet {
-  animation: bot-glow 1.4s ease-in-out infinite alternate;
+.spider-zz {
+  opacity: 0;
 }
-/* Right arm pivots at the shoulder (top of the arm) */
-.bot-hand {
-  transform-box: fill-box;
-  transform-origin: 25% 5%;
+.spider-pose-nap .spider-zz {
+  animation: spider-zz 2s ease-in-out infinite;
 }
-.is-greeting .bot-hand {
-  animation: bot-wave 1.2s ease-in-out 1;
+
+@keyframes spider-leg-idle {
+  0%,
+  100% {
+    transform: rotate(calc(var(--s) * -1.5deg));
+  }
+  50% {
+    transform: rotate(calc(var(--s) * 3deg));
+  }
 }
-@keyframes bot-float {
+@keyframes spider-leg-walk {
+  from {
+    transform: rotate(calc(var(--s) * -6deg));
+  }
+  to {
+    transform: rotate(calc(var(--s) * 6deg));
+  }
+}
+@keyframes spider-leg-climb {
+  0%,
+  100% {
+    transform: rotate(calc(var(--s) * -4deg));
+  }
+  50% {
+    transform: rotate(calc(var(--s) * 12deg));
+  }
+}
+@keyframes spider-leg-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-20deg);
+  }
+}
+@keyframes spider-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes spider-fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes spider-bob {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
   }
 }
-@keyframes bot-shadow {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(0.78);
+@keyframes spider-glow {
+  from {
     opacity: 0.6;
   }
-}
-@keyframes bot-blink {
-  0%,
-  44%,
-  50%,
-  100% {
-    transform: scaleY(1);
-  }
-  47% {
-    transform: scaleY(0.12);
-  }
-}
-@keyframes bot-glow {
   to {
-    opacity: 0.45;
+    opacity: 0.2;
   }
 }
-@keyframes bot-wave {
-  0%,
-  100% {
-    transform: rotate(0deg);
+@keyframes spider-zz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
   }
   30% {
-    transform: rotate(-120deg);
+    opacity: 1;
   }
-  50% {
-    transform: rotate(-95deg);
-  }
-  70% {
-    transform: rotate(-125deg);
-  }
-  85% {
-    transform: rotate(-100deg);
+  100% {
+    opacity: 0;
+    transform: translate(60px, -120px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bot-float,
-  .bot-shadow,
-  .bot-eyes,
-  .bot-antenna,
-  .bot-jet,
-  .is-greeting .bot-hand {
+  .spider-web-spoke,
+  .spider-web-spiral,
+  .spider-web-ring {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .spider-img,
+  .spider-eyeglow,
+  .spider-leg,
+  .spider-pose-sleep .spider-img,
+  .spider-pose-wake .spider-img,
+  .is-greeting .spider-leg-ro {
     animation: none;
   }
-  .bot-spark {
-    display: none;
+}
+
+/* ── Logo hover web (components/Navigation.tsx, LogoWeb) ─────────────── */
+/* Spokes shoot out from behind the coin, then the spiral winds out behind the text. */
+.logo-web path {
+  fill: none;
+  stroke: rgba(95, 82, 70, 0.42);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  transition:
+    stroke-dashoffset 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.35s ease;
+}
+.logo-web .logo-web-spiral {
+  stroke: rgba(95, 82, 70, 0.32);
+  stroke-width: 0.55;
+}
+.group\/logo:hover .logo-web path,
+.group\/logo:focus-visible .logo-web path {
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+.group\/logo:hover .logo-web-spoke,
+.group\/logo:focus-visible .logo-web-spoke {
+  transition-delay: calc(var(--i) * 0.035s);
+}
+.group\/logo:hover .logo-web-spiral,
+.group\/logo:focus-visible .logo-web-spiral {
+  transition-duration: 0.9s, 0.35s;
+  transition-delay: 0.28s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-web path {
+    transition: opacity 0.2s ease;
+    stroke-dashoffset: 0;
   }
 }

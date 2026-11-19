@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, FileText, Github, Linkedin, Mail } from "lucide-react";
 import { resumeClick } from "@/components/ResumeModal";
@@ -113,10 +113,12 @@ export default function Navigation() {
           <a
             href="#top"
             aria-label={`${profile.name} — back to top`}
-            className={`group/logo pointer-events-auto flex h-11 items-center gap-2 rounded-full pr-4 pl-1 transition-colors duration-500 ${
+            className={`group/logo pointer-events-auto relative isolate flex h-11 items-center gap-2 overflow-hidden rounded-full pr-4 pl-1 transition-colors duration-500 ${
               open ? "text-background" : glass
             }`}
           >
+            {/* On hover a fine web spins out from behind the coin, inside the pill */}
+            {!open && <LogoWeb />}
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
               {/* Scroll-progress ring around the initials */}
               <svg aria-hidden viewBox="0 0 44 44" className="pointer-events-none absolute -inset-[4px] h-[44px] w-[44px] -rotate-90">
@@ -234,11 +236,28 @@ export default function Navigation() {
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
-            className={`pointer-events-auto flex h-11 items-center rounded-full px-5 text-[13px] font-medium transition-colors lg:hidden ${
+            className={`pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden ${
               open ? "bg-background text-foreground" : glass
             }`}
           >
-            {open ? "Close" : "Menu"}
+            {/* Hamburger: three lines that fold into an X when the menu is open */}
+            <span aria-hidden className="relative block h-3.5 w-[18px]">
+              <span
+                className={`absolute left-0 h-[1.75px] w-full rounded-full bg-current transition-all duration-300 ease-out-expo ${
+                  open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
+                }`}
+              />
+              <span
+                className={`absolute top-1/2 left-0 h-[1.75px] w-full -translate-y-1/2 rounded-full bg-current transition-all duration-300 ${
+                  open ? "scale-x-0 opacity-0" : ""
+                }`}
+              />
+              <span
+                className={`absolute left-0 h-[1.75px] w-full rounded-full bg-current transition-all duration-300 ease-out-expo ${
+                  open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
+                }`}
+              />
+            </span>
           </button>
         </nav>
       </header>
@@ -305,5 +324,90 @@ export default function Navigation() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/** Small deterministic jitter, so the web looks hand-spun but renders the same every time. */
+const jitter = (n: number) => {
+  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return v - Math.floor(v) - 0.5;
+};
+
+/**
+ * A fine orb web drawn inside the logo pill, behind the coin and the text. Its hub sits behind the
+ * SG coin (22px in, centred), spokes run to the pill edges, and a capture spiral winds out behind
+ * the text. Drawn on hover/focus (CSS: .logo-web in globals.css). Re-measures when the pill widens
+ * ("Portfolio" → full name past the hero).
+ */
+function LogoWeb() {
+  const ref = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const host = ref.current?.parentElement;
+    if (!host) return;
+    const measure = () => setSize({ w: host.offsetWidth, h: host.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, []);
+
+  const paths = useMemo(() => {
+    const { w, h } = size;
+    if (!w || !h) return null;
+    const hx = 22;
+    const hy = h / 2;
+    const f = (v: number) => v.toFixed(1);
+    const n = 12;
+    const angles = Array.from({ length: n }, (_, i) => (i / n) * Math.PI * 2 + jitter(i) * 0.3);
+    const reach = (a: number) => {
+      const dx = Math.cos(a);
+      const dy = Math.sin(a);
+      const tx = dx > 0 ? (w - hx) / dx : dx < 0 ? -hx / dx : Infinity;
+      const ty = dy > 0 ? (h - hy) / dy : dy < 0 ? -hy / dy : Infinity;
+      return Math.min(tx, ty) + 1;
+    };
+    const pt = (a: number, r: number) => [hx + Math.cos(a) * r, hy + Math.sin(a) * r] as const;
+    const spokes = angles.map((a) => {
+      const [x, y] = pt(a, reach(a));
+      return `M${hx} ${f(hy)}L${f(x)} ${f(y)}`;
+    });
+    let spiral = "";
+    let pen = false;
+    const maxR = w - hx;
+    for (let s = 0; s < n * 40; s++) {
+      const r1 = 5 + s * 0.62 + jitter(s) * 0.7;
+      const r2 = 5 + (s + 1) * 0.62 + jitter(s + 1) * 0.7;
+      if (r1 > maxR) break;
+      const i = s % n;
+      const j = (i + 1) % n;
+      const a1 = angles[i];
+      let a2 = angles[j];
+      if (a2 < a1) a2 += Math.PI * 2;
+      if (r1 > reach(a1) - 1 || r2 > reach(angles[j]) - 1) {
+        pen = false;
+        continue;
+      }
+      const [x1, y1] = pt(a1, r1);
+      const [x2, y2] = pt(a2, r2);
+      const [mx, my] = pt((a1 + a2) / 2, ((r1 + r2) / 2) * 0.9); // silk sags toward the hub
+      spiral += `${pen ? "" : `M${f(x1)} ${f(y1)} `}Q${f(mx)} ${f(my)} ${f(x2)} ${f(y2)} `;
+      pen = true;
+    }
+    return { spokes, spiral };
+  }, [size]);
+
+  return (
+    <svg
+      ref={ref}
+      aria-hidden
+      viewBox={`0 0 ${size.w || 1} ${size.h || 1}`}
+      className="logo-web pointer-events-none absolute inset-0 -z-10 h-full w-full"
+    >
+      {paths?.spokes.map((d, i) => (
+        <path key={i} className="logo-web-spoke" style={{ "--i": i } as React.CSSProperties} pathLength={1} d={d} />
+      ))}
+      {paths && <path className="logo-web-spiral" pathLength={1} d={paths.spiral} />}
+    </svg>
   );
 }

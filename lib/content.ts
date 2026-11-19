@@ -21,6 +21,8 @@ export const navLinks = [
 ];
 
 export type CaseStudy = {
+  /** Matches Project.slug; the full write-up lives at /work/<slug>. */
+  slug: string;
   project: string;
   title: string;
   /** Highlight panel: one metric or capability. */
@@ -32,6 +34,7 @@ export type CaseStudy = {
 /** Engineering case studies — one problem, one highlight, three decisions, the stack. */
 export const caseStudies: CaseStudy[] = [
   {
+    slug: "live-classroom",
     project: "Live Classroom · WebRTC",
     title: "Solving the class-start concurrency challenge",
     result: {
@@ -47,6 +50,7 @@ export const caseStudies: CaseStudy[] = [
     stack: ["React", "TypeScript", "LiveKit", "Node.js", "MongoDB", "Redis"],
   },
   {
+    slug: "xl1-ecommerce",
     project: "E-commerce · Next.js",
     title: "Turning a storefront into a faster shopping experience",
     result: {
@@ -62,6 +66,7 @@ export const caseStudies: CaseStudy[] = [
     stack: ["Next.js", "React", "JavaScript", "SSR", "CCAvenue"],
   },
   {
+    slug: "lms",
     project: "EdTech · LMS",
     title: "Building reusable interfaces for education workflows",
     result: {
@@ -97,6 +102,8 @@ export type Project = {
   domain: string;
   /** Gets the "Featured" badge. */
   featured?: boolean;
+  /** Has a full case-study page at /work/<slug> (see caseStudies). */
+  slug?: string;
   /** Which animated demo to show. */
   visual: "webrtc" | "store" | "lms" | "pmt";
   /** Live site, shown as a "Visit live site" link. */
@@ -115,6 +122,7 @@ export const projects: Project[] = [
   {
     title: "Live Classroom Platform (WebRTC)",
     short: "Live Classroom",
+    slug: "live-classroom",
     domain: "Real-time · EdTech",
     featured: true,
     visual: "webrtc",
@@ -134,6 +142,7 @@ export const projects: Project[] = [
   {
     title: "XL1 Super Sports — E-Commerce",
     short: "XL1 E-Commerce",
+    slug: "xl1-ecommerce",
     domain: "Commerce · Sports retail",
     featured: true,
     visual: "store",
@@ -154,6 +163,7 @@ export const projects: Project[] = [
   {
     title: "Learning Management System",
     short: "LMS",
+    slug: "lms",
     visual: "lms",
     domain: "Education",
     stat: { value: "1k+", label: "learners across 15+ courses" },
@@ -536,3 +546,11 @@ export const skillInfo: Record<string, { summary: string; points: string[] }> = 
     ],
   },
 };
+
+/** A project together with its case study, for the /work/<slug> pages (in page order). */
+export function caseStudyPages() {
+  return projects.flatMap((project) => {
+    const study = caseStudies.find((c) => c.slug === project.slug);
+    return study ? [{ project, study }] : [];
+  });
+}

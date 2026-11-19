@@ -9,7 +9,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { ArrowDown, ArrowUpRight, FileText, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowUpRight, FileText, MessageCircle, Sparkles } from "lucide-react";
 import { openResume } from "@/components/ResumeModal";
 import { whenIntroDone } from "@/components/Intro";
 import { EASE } from "@/components/motion/Reveal";
@@ -160,8 +160,6 @@ export default function Hero() {
   const textOpacity = useTransform(p, [0, 0.55], [1, 0]);
   // Phone scroll cue: visible at the top of the page, gone after the first ~120px of scrolling.
   const { scrollY } = useScroll();
-  const cueOpacity = useTransform(scrollY, [0, 120], [1, 0]);
-  const cuePointer = useTransform(scrollY, (y) => (y > 100 ? "none" : "auto"));
   const textY = useTransform(p, [0, 1], ["0%", "-18%"]);
   const portraitY = useTransform(p, [0, 1], ["0%", "-14%"]);
   const portraitScale = useTransform(p, [0, 1], [1, 1.12]);
@@ -207,6 +205,16 @@ export default function Hero() {
       // Exactly one screen on phones (copy only) and desktop; tablets stack copy over the portrait.
       className="relative min-h-[100svh] overflow-hidden md:flex md:flex-col desk:block desk:h-[100svh] desk:min-h-[640px]"
     >
+      {/* Phones: warm sunrise background — peach fading into the page cream, with an orange glow top-right */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(170deg,#ffe4d3_0%,#fbeee6_45%,hsl(var(--background))_100%)] md:hidden"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-28 h-80 w-80 rounded-full bg-[radial-gradient(circle,hsl(18_100%_58%/0.32)_0%,transparent_70%)] md:hidden"
+      />
+
       {/* Peach glow behind the portrait */}
       <motion.div
         aria-hidden
@@ -293,51 +301,6 @@ export default function Hero() {
           <HeroSkills play={ready} />
         </motion.div>
 
-        {/* Phones only: a rotating "scroll to explore" badge around a bobbing arrow. Pinned to the
-            bottom of the screen so it's always visible on load (browser bars can hide the hero's
-            bottom edge), then it fades away as soon as the visitor starts scrolling. */}
-        <motion.a
-          href="#projects"
-          aria-label="Scroll to projects"
-          style={{ opacity: cueOpacity, pointerEvents: cuePointer }}
-          className="fixed inset-x-0 bottom-4 z-40 mx-auto flex h-20 w-20 items-center justify-center md:hidden"
-        >
-          <motion.span
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={ready ? { opacity: 1, scale: 1 } : undefined}
-            transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
-            className="relative flex h-full w-full items-center justify-center rounded-full bg-background/85 shadow-[0_12px_30px_-14px_rgba(0,0,0,0.35)] ring-1 ring-border"
-          >
-            <svg
-              viewBox="0 0 100 100"
-              className="absolute inset-0 h-full w-full animate-[spin_14s_linear_infinite]"
-              aria-hidden
-            >
-              <defs>
-                <path
-                  id="scroll-cue-ring"
-                  d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"
-                />
-              </defs>
-              <text className="fill-foreground/65 font-mono text-[10px] tracking-[0.14em] uppercase">
-                <textPath
-                  href="#scroll-cue-ring"
-                  textLength="236"
-                  lengthAdjust="spacing"
-                >
-                  Scroll down · Explore my work ·
-                </textPath>
-              </text>
-            </svg>
-            <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background shadow-[0_10px_24px_-8px_rgba(0,0,0,0.5)]">
-              <ArrowDown className="h-4 w-4 animate-[scroll-cue-bob_1.6s_ease-in-out_infinite]" />
-            </span>
-            <span
-              aria-hidden
-              className="absolute inset-0 animate-ping rounded-full border border-accent/40 [animation-duration:2.4s]"
-            />
-          </motion.span>
-        </motion.a>
       </div>
 
       {/* Portrait — transparent photo used as-is, so the page and peach glow show around it */}
